@@ -110,3 +110,39 @@ respect it:
 `SKILL_DECK_DATA_DIR` and `SKILL_DECK_OUT` do the same thing and win over the
 file. The tracked `data/` keeps the starter, and their deck builds beside their
 own files.
+
+## 6. Make it one keystroke
+
+A reference you have to go find is a reference you stop using. `open
+index.html` puts it in a `file://` tab among forty others, which is the
+failure mode, not the finish line. Offer to wire a launcher at the end of
+setup, and pick the mechanism from what is actually on their machine rather
+than assuming.
+
+Chromium browsers have app mode, which is the good answer. A chromeless
+window, its own taskbar entry, its own alt-tab slot:
+
+```
+chrome --app="file:///ABSOLUTE/PATH/index.html" --window-size=1000,900
+```
+
+Wrap that in whatever their OS uses for a launcher:
+
+- **Windows**: a `.lnk` on the desktop, written with `WScript.Shell`. Set
+  `TargetPath` to the browser, `Arguments` to the line above, and
+  `WorkingDirectory` to the deck folder.
+- **macOS**: a small `.app` from Automator running the same line, or a shell
+  alias if they would rather type it.
+- **Linux**: a `.desktop` entry with `Exec=` set to the same line.
+
+Two cases where app mode is not available, so say so rather than shipping
+something broken:
+
+- **Firefox** removed site-specific browsers. Pin the tab, or use a Chromium
+  browser for this one thing.
+- **Safari**'s Add to Dock refuses `file://` URLs. Serve the folder over
+  localhost and point the dock item at that, or use a Chromium browser.
+
+Point the launcher at the built file, not at a copy. Rebuilds write in place,
+so the shortcut keeps working and never needs updating. If they set `out` in
+`deck.local.json`, point it at that path instead.

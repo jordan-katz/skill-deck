@@ -33,6 +33,24 @@ node scripts/build.mjs
 open index.html
 ```
 
+## Keeping it one keystroke away
+
+A reference you have to go find is one you stop using. Open it in a Chromium
+browser's app mode and it gets a chromeless window, its own taskbar entry and
+its own alt-tab slot:
+
+```
+chrome --app="file:///ABSOLUTE/PATH/index.html" --window-size=1000,900
+```
+
+Wrap that in a `.lnk` on Windows, a small Automator `.app` on macOS, or a
+`.desktop` entry on Linux. Rebuilds write in place, so the shortcut never needs
+updating. Firefox dropped site-specific browsers and Safari's Add to Dock
+refuses `file://`, so on those, pin a tab or serve the folder over localhost.
+
+Ask Claude Code to set this up along with the rest and it will pick the right
+mechanism for your machine.
+
 ## How it fits together
 
 `sync.mjs` reads your configs and writes `data/*.json`. `build.mjs` reads only
