@@ -27,11 +27,16 @@ By hand instead:
 ```bash
 git clone https://github.com/jordan-katz/skill-deck
 cd skill-deck
-$EDITOR data/sources.json     # point path at your config
+$EDITOR data/sources.json     # copy _example to a real key, point path at your config
 node scripts/sync.mjs
 node scripts/build.mjs
 open index.html
 ```
+
+A fresh clone has no agents configured, so `sync.mjs` stops and says so rather
+than guessing. The key you choose becomes `data/<key>.json` and becomes a tab;
+picking `claude-code` or `example` replaces one of the starter tabs, which
+`git checkout data/` brings back.
 
 ## Keeping it one keystroke away
 

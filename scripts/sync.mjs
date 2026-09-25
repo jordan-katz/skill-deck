@@ -54,6 +54,16 @@ const entries = Object.entries(sources).filter(([id]) => !id.startsWith("_"));
 // borrowFrom is a build-order dependency, so sort the borrowers last.
 const ordered = entries.filter(([, e]) => !e.borrowFrom).concat(entries.filter(([, e]) => e.borrowFrom));
 
+// A fresh clone has no entries on purpose. Shipping a live one pointed at
+// ~/.claude meant that running sync before editing this file overwrote the
+// starter tab with whatever happened to be there.
+if (!ordered.length) {
+  console.error("No agents configured yet.");
+  console.error("Open data/sources.json, copy the _example block to a real key such as \"my-claude\",");
+  console.error("point its path at your config, then run this again.");
+  process.exit(1);
+}
+
 const built = new Map();
 let wrote = 0;
 let skipped = 0;

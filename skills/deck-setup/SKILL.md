@@ -48,7 +48,14 @@ anything about their setup:
 }
 ```
 
-Then delete the starter entries they are not using, and run:
+A fresh clone ships no live entries, only an `_example` block, and sync exits
+non-zero until there is at least one real key. That is deliberate: the key
+becomes `data/<key>.json`, so a live default would have overwritten a starter
+tab the first time anyone ran sync without reading the file. Warn them if they
+pick `claude-code` or `example`, since those replace the shipped demo tabs.
+`git checkout data/` brings them back.
+
+Then run:
 
 ```
 node scripts/sync.mjs && node scripts/build.mjs
