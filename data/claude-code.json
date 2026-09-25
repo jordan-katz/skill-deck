@@ -1,0 +1,301 @@
+{
+  "_comment": "Starter deck. Every entry is invented to show the shape. Point data/sources.json at your own config and run sync to replace it.",
+  "id": "claude-code",
+  "name": "Claude Code",
+  "binary": "claude",
+  "configPath": "~/.claude",
+  "repo": "",
+  "syncedAt": "2026-09-25",
+  "commandPrefix": "/",
+  "mcpCheck": "claude mcp list",
+  "groups": [
+    {
+      "id": "execution",
+      "title": "Execution",
+      "lead": "How work gets planned, built and reviewed.",
+      "skills": [
+        {
+          "name": "survey",
+          "blurb": "Read the codebase and report how it actually fits together.",
+          "effect": "inspect",
+          "effectNote": "Opens files. Writes none.",
+          "mode": "auto",
+          "arg": "[area to survey]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "agent",
+              "name": "reader",
+              "blurb": "Fans out across files and returns the conclusion, not the file dumps."
+            }
+          ],
+          "usesNote": "Spawns one reader per top-level directory on a whole-repo survey."
+        },
+        {
+          "name": "blueprint",
+          "blurb": "Turn a change into a plan another engineer could execute cold.",
+          "effect": "draft",
+          "effectNote": "Writes the plan to docs/plans/. Touches no product code.",
+          "mode": "invoke",
+          "arg": "[what to plan]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "skill",
+              "name": "survey",
+              "blurb": "Read the codebase and report how it actually fits together."
+            }
+          ],
+          "usesNote": ""
+        },
+        {
+          "name": "implement",
+          "blurb": "Build it: work in dependency order, then prove it with a fresh run.",
+          "effect": "build",
+          "effectNote": "Edits code, runs tests, may install project dependencies. Stops before anything destructive.",
+          "mode": "auto",
+          "arg": "[what to build, or the plan to execute]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "skill",
+              "name": "survey",
+              "blurb": "Read the codebase and report how it actually fits together."
+            },
+            {
+              "kind": "skill",
+              "name": "check",
+              "blurb": "Run the suite and report what broke, with the failing input."
+            },
+            {
+              "kind": "agent",
+              "name": "reviewer",
+              "blurb": "Reads a diff against the stated intent and argues with it."
+            }
+          ],
+          "usesNote": "Calls check after each unit of work rather than once at the end."
+        },
+        {
+          "name": "check",
+          "blurb": "Run the suite and report what broke, with the failing input.",
+          "effect": "inspect",
+          "effectNote": "Runs tests. Fixes nothing.",
+          "mode": "auto",
+          "arg": "[suite or path]",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        }
+      ]
+    },
+    {
+      "id": "writing",
+      "title": "Writing",
+      "lead": "Prose that sounds like a person wrote it.",
+      "skills": [
+        {
+          "name": "draft",
+          "blurb": "Write a first pass in your own voice from notes or a transcript.",
+          "effect": "draft",
+          "effectNote": "Writes to drafts/. Never publishes.",
+          "mode": "auto",
+          "arg": "[what to write]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "mcp",
+              "name": "notes",
+              "blurb": "Reads the notes store this config is pointed at."
+            }
+          ],
+          "usesNote": ""
+        },
+        {
+          "name": "tighten",
+          "blurb": "Cut a draft by a third without losing an argument.",
+          "effect": "draft",
+          "effectNote": "",
+          "mode": "auto",
+          "arg": "[file or paste]",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        },
+        {
+          "name": "publish",
+          "blurb": "Push an approved draft to the connected site and return the live URL.",
+          "effect": "external",
+          "effectNote": "Reaches outside the repo. Asks once before it posts.",
+          "mode": "invoke",
+          "arg": "[draft]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "mcp",
+              "name": "site",
+              "blurb": "The publishing target this config is pointed at."
+            }
+          ],
+          "usesNote": ""
+        }
+      ]
+    },
+    {
+      "id": "config",
+      "title": "Config",
+      "lead": "This setup itself.",
+      "skills": [
+        {
+          "name": "audit-config",
+          "blurb": "Report what is installed, what is stale and what nothing reaches.",
+          "effect": "inspect",
+          "effectNote": "Reads the config directory. Changes nothing.",
+          "mode": "invoke",
+          "arg": "",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        },
+        {
+          "name": "rebuild-deck",
+          "blurb": "Resync the deck from the configs and rebuild the page.",
+          "effect": "build",
+          "effectNote": "Writes data/ and index.html in the deck repo.",
+          "mode": "invoke",
+          "arg": "",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        },
+        {
+          "name": "new-skill",
+          "blurb": "Scaffold a skill with frontmatter that will actually trigger.",
+          "effect": "build",
+          "effectNote": "Creates skills/<name>/SKILL.md.",
+          "mode": "auto",
+          "arg": "[what it should do]",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "name": "reader",
+      "blurb": "Fans out across files and returns the conclusion, not the file dumps.",
+      "whenToUse": "Answering a question that spans more files than fit in one context.",
+      "spawnedBy": "/survey",
+      "model": "haiku",
+      "readOnly": true
+    },
+    {
+      "name": "reviewer",
+      "blurb": "Reads a diff against the stated intent and argues with it.",
+      "whenToUse": "Before a change lands.",
+      "spawnedBy": "/implement",
+      "model": "sonnet",
+      "readOnly": true
+    }
+  ],
+  "mcps": [
+    {
+      "name": "notes",
+      "blurb": "The notes store this config reads from.",
+      "scope": "user",
+      "auth": "env"
+    },
+    {
+      "name": "site",
+      "blurb": "The publishing target /publish writes to.",
+      "scope": "project",
+      "auth": "oauth"
+    }
+  ],
+  "plugins": [
+    {
+      "name": "house-style",
+      "prefix": "/house:",
+      "blurb": "House voice rules and the review checklist that enforces them."
+    }
+  ],
+  "cards": [
+    {
+      "id": "reading-this",
+      "title": "Reading this deck",
+      "lead": "What the columns mean and why the effect column exists.",
+      "body": [
+        {
+          "type": "p",
+          "text": "Every row is something you can type. Click the command to copy it. The uses number opens the tree of what that command delegates to, so you can see the blast radius before you run it."
+        },
+        {
+          "type": "keys",
+          "head": [
+            "Column",
+            "What it tells you"
+          ],
+          "rows": [
+            [
+              "effect",
+              "How far the blast radius goes, from reads-only to changes-things-outside-the-repo."
+            ],
+            [
+              "runs",
+              "Whether the agent can reach for it on its own, or only when you type it."
+            ],
+            [
+              "argument",
+              "What to put after the command. Square brackets are placeholders."
+            ],
+            [
+              "uses",
+              "How many other skills, agents or servers it pulls in."
+            ]
+          ]
+        },
+        {
+          "type": "note",
+          "text": "The effect column is a judgment you write in your config, not something the tool can infer. An unreviewed deck will say build for everything."
+        }
+      ]
+    },
+    {
+      "id": "make-it-yours",
+      "title": "Make it yours",
+      "lead": "Three commands and one file.",
+      "body": [
+        {
+          "type": "p",
+          "text": "Point sources.json at your config, then sync and build. The skills-dir adapter needs nothing but a skills directory, so most setups work without writing any code."
+        },
+        {
+          "type": "code",
+          "text": "git clone <this repo> skill-deck\ncd skill-deck\n$EDITOR data/sources.json    # set path to your config\nnode scripts/sync.mjs\nnode scripts/build.mjs"
+        },
+        {
+          "type": "p",
+          "text": "Then open index.html. If you have Claude Code, skip the editing step: ask it to set up the skill deck for your config and it will read skills/deck-setup/SKILL.md and wire it up, including writing blurbs that read as English rather than as model trigger text."
+        },
+        {
+          "type": "links",
+          "rows": [
+            [
+              "Adapters",
+              "scripts/adapters/"
+            ],
+            [
+              "What a tab is",
+              "data/<id>.json"
+            ],
+            [
+              "Brand and tab order",
+              "data/deck.json"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

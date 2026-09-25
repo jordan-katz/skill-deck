@@ -1,0 +1,70 @@
+{
+  "_comment": "A second tab exists only to show that adding an agent is dropping a file in data/, and that identity is per agent.",
+  "id": "example",
+  "name": "Example CLI",
+  "binary": "example",
+  "subtitle": "a second agent, to prove the point",
+  "configPath": "~/.example",
+  "repo": "",
+  "syncedAt": "2026-09-25",
+  "commandPrefix": "$",
+  "mcpCheck": "example mcp status",
+  "groups": [
+    {
+      "id": "basics",
+      "title": "Basics",
+      "lead": "Enough to show a second command prefix.",
+      "skills": [
+        {
+          "name": "hello",
+          "blurb": "Print a greeting and exit.",
+          "effect": "inspect",
+          "effectNote": "",
+          "mode": "invoke",
+          "arg": "[name]",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        },
+        {
+          "name": "tidy",
+          "blurb": "Format and sort the files you point it at.",
+          "effect": "build",
+          "effectNote": "Rewrites files in place.",
+          "mode": "auto",
+          "arg": "[path]",
+          "onDisk": true,
+          "uses": [],
+          "usesNote": ""
+        },
+        {
+          "name": "ship",
+          "blurb": "Tag a release and push it.",
+          "effect": "external",
+          "effectNote": "Pushes to the remote. Not reversible from here.",
+          "mode": "invoke",
+          "arg": "[version]",
+          "onDisk": true,
+          "uses": [
+            {
+              "kind": "skill",
+              "name": "tidy",
+              "blurb": "Format and sort the files you point it at."
+            }
+          ],
+          "usesNote": ""
+        }
+      ]
+    }
+  ],
+  "agents": [],
+  "mcps": [
+    {
+      "name": "registry",
+      "blurb": "Where $ship publishes to.",
+      "scope": "user",
+      "auth": "token"
+    }
+  ],
+  "plugins": []
+}

@@ -1,0 +1,52 @@
+{
+  "_comment": "Built into the CLI rather than read from your config, so these are maintained by hand. _verified is when someone last checked them against the vendor docs.",
+  "_verified": "2026-09-25",
+  "claude-code": {
+    "docs": "https://docs.claude.com/en/docs/claude-code",
+    "note": "A short invented sample, not the real command list.",
+    "groups": [
+      {
+        "title": "Session",
+        "lead": "Starting, saving and clearing.",
+        "commands": [
+          {
+            "name": "/clear",
+            "blurb": "Drop the conversation and keep the working directory.",
+            "arg": ""
+          },
+          {
+            "name": "/resume",
+            "blurb": "Pick up a previous session by name.",
+            "arg": "[session]"
+          }
+        ]
+      },
+      {
+        "title": "Config",
+        "lead": "What this install can reach.",
+        "commands": [
+          {
+            "name": "/mcp",
+            "blurb": "List the MCP servers this session can see and their auth state.",
+            "arg": ""
+          },
+          {
+            "name": "/skills",
+            "blurb": "List the skills currently loaded.",
+            "arg": ""
+          }
+        ]
+      }
+    ],
+    "flags": [
+      {
+        "name": "--print",
+        "blurb": "Run one prompt and exit, for scripts and CI."
+      },
+      {
+        "name": "--model",
+        "blurb": "Pick the model for this run."
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "_comment": "Where sync.mjs looks for each config and how to read it. path may be relative to this repo's root, absolute, or start with ~ for your home directory. adapter names a module in scripts/adapters/. Everything outside path/adapter/borrowFrom is identity: it is copied onto the payload, so adapters never hardcode your setup. build.mjs never reads this file.",
+  "_adapters": "skills-dir works for any config with skills/<name>/SKILL.md, agents/*.md and an optional mcp.json, and needs no code. claude-config also reads a curated docs/skills.json. codex-catalog reads skill-deck/catalog.json. Write your own in scripts/adapters/ if your layout differs.",
+  "_start_here": "Change the path below to your own config, delete the entries you do not use, then run node scripts/sync.mjs && node scripts/build.mjs. The starter files in data/ are overwritten by whatever you sync.",
+  "claude-code": {
+    "adapter": "skills-dir",
+    "path": "~/.claude",
+    "name": "Claude Code",
+    "binary": "claude",
+    "configPath": "~/.claude",
+    "commandPrefix": "/",
+    "mcpCheck": "claude mcp list"
+  }
+}

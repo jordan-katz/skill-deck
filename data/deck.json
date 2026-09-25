@@ -1,0 +1,18 @@
+{
+  "_comment": "Everything about this deck that is not inventory. build.mjs reads this; change it here rather than editing scripts. Any data/*.json other than deck.json, sources.json and commands.json becomes a tab.",
+  "brand": {
+    "name": "skill",
+    "suffix": "deck",
+    "docTitle": "Skill Deck",
+    "description": "A printed reference for the commands, skills, agents and MCP servers your coding agents can reach.",
+    "repo": ""
+  },
+  "order": ["claude-code", "example"],
+  "effects": {
+    "inspect": "Reads and reports. Nothing changes.",
+    "draft": "Produces text, a plan, or a doc. No code changes.",
+    "build": "Edits code and files in the repo.",
+    "external": "Changes something outside the repo."
+  },
+  "defaultMcpCheck": "check your agent's MCP list command"
+}

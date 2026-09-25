@@ -1,0 +1,315 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try{var t=localStorage.getItem('deck.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>__DECK_TITLE__</title>
+<meta name="description" content="__DECK_DESCRIPTION__">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root{color-scheme:light dark}
+:root {
+  --ground: #F5F7FA; --surface: #FFFFFF; --ink: #18222D; --muted: #5F6F7E; --line: #DCE3EA;
+  --accent: #0B6B6B; --accent-ink: #FFFFFF; --accent-soft: #E3F1F0; --amber: #B7791F; --amber-soft: #FBF1DC;
+  --auto: #4A5A6A; --invoke: #7A4E9E; --plugin: #2F5F9E; --spawn: #6B6B6B; --scope: #4A5A6A; --auth: #8A6A2A;
+  --focus: #1D9E9E; --code-bg: #F0F3F7;
+  --eff-inspect: #2F6FB0; --eff-draft: #2E7D4F; --eff-build: #B85C12; --eff-external: #B3261E;
+  --eff-inspect-soft: #E4EEF9; --eff-draft-soft: #E3F2E8; --eff-build-soft: #FBEBDD; --eff-external-soft: #FAE3E1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0E1317; --surface: #151C22; --ink: #E6EBF0; --muted: #93A1AF; --line: #26303A;
+    --accent: #3FBFB2; --accent-ink: #0E1317; --accent-soft: #163331; --amber: #E0A63A; --amber-soft: #3A2C10;
+    --auto: #A7B4C0; --invoke: #C7A6E6; --plugin: #8FB4E8; --spawn: #A0A0A0; --scope: #A7B4C0; --auth: #D9B36A;
+    --focus: #5FD6CB; --code-bg: #0B1014;
+    --eff-inspect: #8FB8F0; --eff-draft: #7CCB9A; --eff-build: #F0A45E; --eff-external: #F08C85;
+    --eff-inspect-soft: #1A2A3E; --eff-draft-soft: #17301F; --eff-build-soft: #3A2612; --eff-external-soft: #3C1916;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0E1317; --surface: #151C22; --ink: #E6EBF0; --muted: #93A1AF; --line: #26303A;
+  --accent: #3FBFB2; --accent-ink: #0E1317; --accent-soft: #163331; --amber: #E0A63A; --amber-soft: #3A2C10;
+  --auto: #A7B4C0; --invoke: #C7A6E6; --plugin: #8FB4E8; --spawn: #A0A0A0; --scope: #A7B4C0; --auth: #D9B36A;
+  --focus: #5FD6CB; --code-bg: #0B1014;
+  --eff-inspect: #8FB8F0; --eff-draft: #7CCB9A; --eff-build: #F0A45E; --eff-external: #F08C85;
+  --eff-inspect-soft: #1A2A3E; --eff-draft-soft: #17301F; --eff-build-soft: #3A2612; --eff-external-soft: #3C1916;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: "IBM Plex Sans","Segoe UI",system-ui,sans-serif; font-size: 15px; line-height: 1.5; }
+code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
+[hidden] { display: none !important; }
+.wrap { max-width: 1020px; margin: 0 auto; padding: 0 20px 64px; }
+.skip { position:absolute; left:-9999px; }
+.skip:focus { left:8px; top:8px; z-index:9; background:var(--surface); color:var(--ink); padding:8px 12px; border:1px solid var(--accent); border-radius:6px; }
+/* Two bands stick: identity plus the palette, then the agent tabs. Everything
+   that narrows a view scrolls away with the view it belongs to. */
+.top { position: sticky; top: 0; z-index: 2; background: var(--ground); padding: 12px 0 0; border-bottom: 1px solid var(--line); }
+.top-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.top h1 { margin: 0; font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 16px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.top h1 span { color: var(--accent); }
+.controls { display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; padding: 4px 0 10px; }
+.controls-end { margin-left: auto; display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
+.controls-end .sep { color: var(--muted); opacity: 0.45; }
+.filter { display: flex; align-items: center; gap: 9px; flex: 0 1 260px; }
+.filter input { flex: 1; min-width: 0; font: 12.5px "JetBrains Mono", ui-monospace, Consolas, monospace; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.filter input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+.filter .total { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.theme { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-width: 76px; }
+.theme:hover { color: var(--ink); border-color: var(--ink); }
+.theme:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.kbd { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--ground); border: 1px solid var(--line); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
+.cc-open { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; cursor: pointer; flex: 0 1 190px; }
+.cc-open:hover { color: var(--ink); border-color: var(--accent); }
+.cc-open:hover .kbd { border-color: var(--accent); color: var(--accent); }
+.cc-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cc-pins { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+.cc-hint { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); opacity: 0.6; }
+.pin { display: inline-flex; align-items: baseline; gap: 6px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 5px; padding: 3px 8px; cursor: pointer; max-width: 200px; }
+.pin:hover { border-color: var(--accent); }
+.pin:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.pin.copied { background: var(--amber-soft); color: var(--amber); }
+.pin-n { font-size: 9.5px; font-weight: 500; opacity: 0.65; font-variant-numeric: tabular-nums; }
+.pin-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal[hidden] { display: none; }
+.pal { position: fixed; inset: 0; z-index: 10; background: rgba(8,12,16,0.55); display: flex; justify-content: center; padding: 10vh 16px 16px; }
+.pal-box { width: 100%; max-width: 620px; max-height: 70vh; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.30); }
+.pal-input { font: 14px "JetBrains Mono", ui-monospace, monospace; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); outline: none; }
+.pal-list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; }
+.pal-item { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 10px; align-items: baseline; padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+.pal-item[aria-selected="true"] { background: var(--accent-soft); }
+.pal-cmd { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
+.pal-where { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.pal-blurb { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal-item.pinned .pal-cmd::after { content: " \2605"; font-size: 10px; color: var(--amber); }
+.pal-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
+.pal-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 9px 12px; border-top: 1px solid var(--line); background: var(--ground); font-size: 11px; color: var(--muted); }
+.pal-foot span { display: inline-flex; align-items: center; gap: 5px; }
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 10px; }
+.tab { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--ink); }
+.tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.tab .n { font-weight: 500; opacity: 0.7; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.subtabs { display: flex; gap: 5px; flex-wrap: wrap; margin: 10px 0 2px; }
+.subtab { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.subtab[aria-selected="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.subtab:hover { color: var(--ink); }
+.subtab:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.subtab .n { font-weight: 500; opacity: 0.65; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.subtab.has-match { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+.subtab.no-match { opacity: 0.4; }
+.subtab[aria-selected="true"].has-match { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.agent-meta { margin: 12px 0 0; color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.agent-meta b { color: var(--ink); font-weight: 500; }
+.panel { margin-top: 4px; }
+.panel-lead { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+.panel-lead strong { color: var(--ink); font-weight: 500; }
+.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.linkish:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dir { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin-top: 10px; overflow: hidden; }
+.dir-head { display: grid; grid-template-columns: auto auto 1fr auto; gap: 0 12px; align-items: baseline; padding: 12px 14px; cursor: pointer; list-style: none; user-select: none; }
+.dir-head::-webkit-details-marker { display: none; }
+.dir-head:hover { background: var(--accent-soft); }
+.dir-head:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.caret { width: 0; height: 0; border-left: 5px solid var(--muted); border-top: 4px solid transparent; border-bottom: 4px solid transparent; align-self: center; transition: transform 120ms; }
+.dir[open] > .dir-head .caret { transform: rotate(90deg); }
+.dir-title { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.dir-lead { color: var(--muted); font-size: 13px; }
+.count { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dir > .rows { border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.row { display: grid; gap: 6px 14px; align-items: start; padding: 10px 14px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.skill-row, .row-head { grid-template-columns: minmax(170px,210px) minmax(220px,1fr) 86px 84px minmax(110px,170px) 52px; }
+.cmd-row, .cmd-head { grid-template-columns: minmax(180px,230px) 1fr minmax(110px,180px); }
+.flat-row { grid-template-columns: minmax(170px,210px) 1fr auto; align-items: center; }
+.row-head, .cmd-head { padding-block: 7px; background: var(--ground); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.row.hidden, .dir.hidden, .card.hidden { display: none; }
+.cell { min-width: 0; }
+.cell-blurb { font-size: 14.5px; }
+.row-head .cell, .cmd-head .cell { font-size: inherit; }
+.skill-row .cell-cmd, .flat-row .cell-cmd, .cmd-row .cell-cmd { cursor: pointer; }
+.row-head .cell-cmd, .cmd-head .cell-cmd { cursor: default; }
+.cell-uses { text-align: right; }
+.chip { font-size: 13.5px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; display: inline-flex; align-items: baseline; gap: 8px; }
+.chip-copy { cursor: pointer; border-radius: 4px; padding: 1px 4px; margin: -1px -4px; }
+.chip-copy:hover { background: var(--accent-soft); }
+.chip-copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chip-copy.copied { background: var(--amber-soft); }
+.chip-copy.copied .copy-hint { color: var(--amber); }
+.chip-copy.copied .copy-hint::before { content: "copied"; }
+.chip-static { color: var(--ink); font-weight: 500; }
+.copy-hint { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; font-weight: 500; color: var(--muted); opacity: 0; }
+.copy-hint::before { content: "copy"; }
+.chip-copy:hover .copy-hint, .chip-copy.copied .copy-hint, .chip-copy:focus-visible .copy-hint { opacity: 1; }
+.arg { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.dash { color: var(--muted); font-size: 12px; opacity: 0.6; }
+.badge { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.03em; padding: 2px 7px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; }
+.badge-auto { color: var(--auto); } .badge-invoke { color: var(--invoke); } .badge-plugin { color: var(--plugin); }
+.badge-spawn { color: var(--spawn); } .badge-scope { color: var(--scope); } .badge-auth { color: var(--auth); }
+.badge-model { color: var(--muted); border-style: dashed; } .badge-ro { color: var(--eff-inspect); }
+.badge-off { color: var(--eff-external); border-style: dashed; }
+.cell-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.uses-toggle { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.uses-toggle::after { content: " \25B8"; font-size: 10px; }
+.uses-toggle[aria-expanded="true"]::after { content: " \25BE"; }
+.uses-toggle:hover { border-color: var(--accent); }
+.uses-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.uses-none { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); opacity: 0.5; padding-right: 8px; }
+.tree { grid-column: 1 / -1; display: none; margin: 2px 0 4px 18px; padding-left: 14px; border-left: 2px solid var(--line); }
+.skill-row.open .tree { display: block; }
+.tree-note { margin: 0 0 6px; color: var(--muted); font-size: 12.5px; }
+.leaves { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.leaf { display: grid; grid-template-columns: 62px minmax(140px,190px) 1fr; gap: 0 12px; align-items: baseline; font-size: 13.5px; position: relative; }
+.leaf::before { content: ""; position: absolute; left: -16px; top: 0.75em; width: 10px; border-top: 2px solid var(--line); }
+.leaf .chip { font-size: 12.5px; }
+.leaf-kind { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.leaf-agent { color: var(--spawn); } .leaf-mcp { color: var(--auth); }
+.leaf-blurb { color: var(--muted); }
+.eff { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+.eff.eff-inspect { color: var(--eff-inspect); background: var(--eff-inspect-soft); }
+.eff.eff-draft { color: var(--eff-draft); background: var(--eff-draft-soft); }
+.eff.eff-build { color: var(--eff-build); background: var(--eff-build-soft); }
+.eff.eff-external { color: var(--eff-external); background: var(--eff-external-soft); }
+.skill-row { box-shadow: inset 3px 0 0 var(--line); }
+.skill-row.eff-inspect { box-shadow: inset 3px 0 0 var(--eff-inspect); }
+.skill-row.eff-draft { box-shadow: inset 3px 0 0 var(--eff-draft); }
+.skill-row.eff-build { box-shadow: inset 3px 0 0 var(--eff-build); }
+.skill-row.eff-external { box-shadow: inset 3px 0 0 var(--eff-external); }
+.eff-note { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+/* The chip is a filter, not a legend. The sentence that used to ride along
+   inside it wrapped the bar to two lines on every load; it lives in the
+   legend and the title now. */
+.effect-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+.effect-bar[hidden] { display: none; }
+.effect-chip { display: inline-flex; align-items: baseline; gap: 7px; background: transparent; border: 1px solid transparent; border-radius: 5px; padding: 3px 4px; cursor: pointer; }
+.effect-chip .n { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.effect-chip:hover { border-color: var(--line); }
+.effect-chip[aria-pressed="true"] { border-color: currentColor; }
+.effect-chip[aria-pressed="true"] .n { color: var(--ink); }
+.effect-chip.eff-inspect[aria-pressed="true"] { color: var(--eff-inspect); }
+.effect-chip.eff-draft[aria-pressed="true"] { color: var(--eff-draft); }
+.effect-chip.eff-build[aria-pressed="true"] { color: var(--eff-build); }
+.effect-chip.eff-external[aria-pressed="true"] { color: var(--eff-external); }
+.effect-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.card { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 16px 18px; margin-top: 12px; }
+.card h3 { margin: 0; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.card .card-lead { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+.card p { margin: 12px 0 0; font-size: 14.5px; }
+.card pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; line-height: 1.65; position: relative; }
+.card pre code { white-space: pre; }
+.pre-wrap { position: relative; }
+.pre-copy { position: absolute; top: 8px; right: 8px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 3px 7px; cursor: pointer; opacity: 0; transition: opacity 120ms; }
+.pre-wrap:hover .pre-copy, .pre-copy:focus-visible { opacity: 1; }
+.pre-copy.copied { color: var(--amber); border-color: var(--amber); }
+.card table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+.card th { text-align: left; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+.card td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.card tr:last-child td { border-bottom: 0; }
+.card td:first-child { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+.card table.keys td:first-child, .card table.links td:first-child { white-space: normal; }
+.card { overflow: hidden; }
+.pre-wrap { max-width: 100%; }
+.card pre { max-width: 100%; }
+.card table.keys td:first-child { color: var(--accent); font-weight: 600; }
+.card table.links td:first-child { white-space: normal; }
+.card a { color: var(--accent); }
+.note { margin-top: 12px; border-left: 3px solid var(--amber); background: var(--amber-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; }
+.note b { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); display: block; margin-bottom: 4px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%,12px); background: var(--ink); color: var(--ground); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; padding: 8px 14px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity 140ms, transform 140ms; z-index: 3; max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translate(-50%,0); }
+.legend { margin-top: 28px; color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.legend .badge { margin-right: 4px; }
+.foot { margin-top: 20px; color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; line-height: 1.7; }
+.foot .chip { font-size: 11.5px; font-weight: 500; }
+.age { display: block; color: var(--eff-build); }
+.empty { display: none; padding: 24px; color: var(--muted); text-align: center; }
+.empty.show { display: block; }
+/* 860, not 760: the six-column row grid needs about 792px of track and gap, so
+   between those two widths it overflowed its container. */
+@media (max-width: 860px) {
+  .wrap { padding-inline: 16px; }
+  .skill-row, .cmd-row, .flat-row { grid-template-columns: 1fr; gap: 4px; }
+  .row-head, .cmd-head { display: none; }
+  .cell-uses { text-align: left; }
+  .cell-tags { justify-content: flex-start; }
+  .leaf { grid-template-columns: 62px 1fr; }
+  .leaf-blurb { grid-column: 2; }
+  .dir-head { grid-template-columns: auto 1fr auto; }
+  .dir-lead { grid-column: 2 / -1; }
+  /* Every band wrapped here, which put 226px of sticky chrome on an 844px
+     screen. Rows of pills scroll sideways instead, the way a phone expects. */
+  .swipe { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px; }
+  .swipe::-webkit-scrollbar { display: none; }
+  .swipe > * { flex: 0 0 auto; }
+  .top { padding-top: 10px; }
+  .top h1 { font-size: 15px; margin-right: auto; white-space: normal; }
+  .tab { padding: 9px 10px; font-size: 11.5px; }
+  .subtab { padding: 8px 12px; }
+  .cc-open { flex: 1 1 auto; order: 3; }
+  .cc-pins { order: 4; }
+  .theme { min-width: 0; padding: 6px 10px; }
+  .controls { padding: 4px 0 8px; gap: 8px 12px; }
+  .filter { flex: 1 1 170px; max-width: calc(100% - 150px); }
+  .filter input { font-size: 16px; padding: 8px 10px; }
+  /* The bar takes a whole line, so it has to come last or it splits the
+     filter and the expand controls across three lines instead of one. */
+  .controls-end { order: 2; }
+  .effect-bar { order: 3; flex: 1 1 100%; min-width: 0; }
+  .effect-chip { padding: 6px 7px; }
+  .card { padding: 14px; }
+  .card table, .card thead, .card tbody, .card tr, .card td { display: block; width: 100%; }
+  .card thead { display: none; }
+  .card tr { border-bottom: 1px solid var(--line); padding: 8px 0; }
+  .card tr:last-child { border-bottom: 0; }
+  .card td { border-bottom: 0; padding: 2px 0; }
+  .card td:first-child { white-space: normal; color: var(--accent); font-weight: 600; }
+  .pre-copy { opacity: 1; }
+  .card table.links td:last-child { display: none; }
+  .card td:first-child { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .caret, .toast, .pre-copy { transition: none; } }
+</style>
+</head><body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+  <header class="top">
+    <div class="top-row">
+      <h1><span>__DECK_NAME__</span> __DECK_SUFFIX__</h1>
+      <button class="cc-open" id="cc-open" type="button" aria-haspopup="dialog">copy anything<kbd class="kbd" id="cc-kbd">ctrl k</kbd></button>
+      <div class="cc-pins swipe" id="pins" role="group" aria-label="Pinned commands"></div>
+      <button class="theme" id="theme" type="button" aria-label="Color theme">system</button>
+    </div>
+    <div class="tabs swipe" role="tablist" aria-label="Agent">__DECK_TABS__</div>
+  </header>
+  <div class="controls">
+    <div class="filter">
+      <input id="filter" type="search" placeholder="narrow this view  ( / )" autocomplete="off" spellcheck="false" aria-label="Narrow the current view">
+      <span class="total" id="total"></span>
+    </div>
+    <div class="effect-bar swipe" id="effects" role="group" aria-label="Filter by effect">__DECK_EFFECTS__</div>
+    <div class="controls-end">
+      <button class="linkish" data-expand type="button">expand all</button>
+      <span class="sep" aria-hidden="true">/</span>
+      <button class="linkish" data-collapse type="button">collapse</button>
+    </div>
+  </div>
+  <main id="main" tabindex="-1">__DECK_BODY__</main>
+  <p class="empty" id="empty">Nothing matches that filter.</p>
+  <div class="legend">__DECK_LEGEND__
+    <span><span class="badge badge-auto">auto</span>The agent can pick it up on its own when the request matches.</span>
+    <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
+    <span><code class="arg">[arg]</code> What to put after the command.</span>
+    <span>Click a command to copy it. The <b>uses</b> number opens the tree of what it delegates to.</span>
+  </div>
+  <p class="foot" data-built="__DECK_BUILT__">__DECK_FOOT__<span class="age" id="age"></span></p>
+</div>
+<div class="pal" id="pal" hidden>
+  <div class="pal-box" role="dialog" aria-modal="true" aria-label="Copy anything">
+    <input class="pal-input" id="pal-input" type="text" autocomplete="off" spellcheck="false" placeholder="copy anything from any tab" aria-label="Search every command">
+    <ul class="pal-list" id="pal-list" role="listbox" aria-label="Results"></ul>
+    <div class="pal-foot"><span><kbd class="kbd">enter</kbd> copy</span><span><kbd class="kbd">alt enter</kbd> pin</span><span><kbd class="kbd">ctrl enter</kbd> go to it</span><span><kbd class="kbd">esc</kbd> close</span></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>__DECK_SCRIPT__</script>
+</body></html>

@@ -1,0 +1,8 @@
+# build.mjs always writes LF. Without this, a Windows checkout rewrites
+# index.html to CRLF and every build then shows the whole file as modified.
+* text=auto
+*.mjs text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.html text eol=lf

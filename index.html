@@ -1,0 +1,1091 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try{var t=localStorage.getItem('deck.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Skill Deck</title>
+<meta name="description" content="A printed reference for the commands, skills, agents and MCP servers your coding agents can reach.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root{color-scheme:light dark}
+:root {
+  --ground: #F5F7FA; --surface: #FFFFFF; --ink: #18222D; --muted: #5F6F7E; --line: #DCE3EA;
+  --accent: #0B6B6B; --accent-ink: #FFFFFF; --accent-soft: #E3F1F0; --amber: #B7791F; --amber-soft: #FBF1DC;
+  --auto: #4A5A6A; --invoke: #7A4E9E; --plugin: #2F5F9E; --spawn: #6B6B6B; --scope: #4A5A6A; --auth: #8A6A2A;
+  --focus: #1D9E9E; --code-bg: #F0F3F7;
+  --eff-inspect: #2F6FB0; --eff-draft: #2E7D4F; --eff-build: #B85C12; --eff-external: #B3261E;
+  --eff-inspect-soft: #E4EEF9; --eff-draft-soft: #E3F2E8; --eff-build-soft: #FBEBDD; --eff-external-soft: #FAE3E1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0E1317; --surface: #151C22; --ink: #E6EBF0; --muted: #93A1AF; --line: #26303A;
+    --accent: #3FBFB2; --accent-ink: #0E1317; --accent-soft: #163331; --amber: #E0A63A; --amber-soft: #3A2C10;
+    --auto: #A7B4C0; --invoke: #C7A6E6; --plugin: #8FB4E8; --spawn: #A0A0A0; --scope: #A7B4C0; --auth: #D9B36A;
+    --focus: #5FD6CB; --code-bg: #0B1014;
+    --eff-inspect: #8FB8F0; --eff-draft: #7CCB9A; --eff-build: #F0A45E; --eff-external: #F08C85;
+    --eff-inspect-soft: #1A2A3E; --eff-draft-soft: #17301F; --eff-build-soft: #3A2612; --eff-external-soft: #3C1916;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0E1317; --surface: #151C22; --ink: #E6EBF0; --muted: #93A1AF; --line: #26303A;
+  --accent: #3FBFB2; --accent-ink: #0E1317; --accent-soft: #163331; --amber: #E0A63A; --amber-soft: #3A2C10;
+  --auto: #A7B4C0; --invoke: #C7A6E6; --plugin: #8FB4E8; --spawn: #A0A0A0; --scope: #A7B4C0; --auth: #D9B36A;
+  --focus: #5FD6CB; --code-bg: #0B1014;
+  --eff-inspect: #8FB8F0; --eff-draft: #7CCB9A; --eff-build: #F0A45E; --eff-external: #F08C85;
+  --eff-inspect-soft: #1A2A3E; --eff-draft-soft: #17301F; --eff-build-soft: #3A2612; --eff-external-soft: #3C1916;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: "IBM Plex Sans","Segoe UI",system-ui,sans-serif; font-size: 15px; line-height: 1.5; }
+code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
+[hidden] { display: none !important; }
+.wrap { max-width: 1020px; margin: 0 auto; padding: 0 20px 64px; }
+.skip { position:absolute; left:-9999px; }
+.skip:focus { left:8px; top:8px; z-index:9; background:var(--surface); color:var(--ink); padding:8px 12px; border:1px solid var(--accent); border-radius:6px; }
+/* Two bands stick: identity plus the palette, then the agent tabs. Everything
+   that narrows a view scrolls away with the view it belongs to. */
+.top { position: sticky; top: 0; z-index: 2; background: var(--ground); padding: 12px 0 0; border-bottom: 1px solid var(--line); }
+.top-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.top h1 { margin: 0; font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 16px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.top h1 span { color: var(--accent); }
+.controls { display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; padding: 4px 0 10px; }
+.controls-end { margin-left: auto; display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
+.controls-end .sep { color: var(--muted); opacity: 0.45; }
+.filter { display: flex; align-items: center; gap: 9px; flex: 0 1 260px; }
+.filter input { flex: 1; min-width: 0; font: 12.5px "JetBrains Mono", ui-monospace, Consolas, monospace; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.filter input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+.filter .total { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.theme { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-width: 76px; }
+.theme:hover { color: var(--ink); border-color: var(--ink); }
+.theme:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.kbd { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--ground); border: 1px solid var(--line); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
+.cc-open { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; cursor: pointer; flex: 0 1 190px; }
+.cc-open:hover { color: var(--ink); border-color: var(--accent); }
+.cc-open:hover .kbd { border-color: var(--accent); color: var(--accent); }
+.cc-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cc-pins { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+.cc-hint { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); opacity: 0.6; }
+.pin { display: inline-flex; align-items: baseline; gap: 6px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 5px; padding: 3px 8px; cursor: pointer; max-width: 200px; }
+.pin:hover { border-color: var(--accent); }
+.pin:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.pin.copied { background: var(--amber-soft); color: var(--amber); }
+.pin-n { font-size: 9.5px; font-weight: 500; opacity: 0.65; font-variant-numeric: tabular-nums; }
+.pin-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal[hidden] { display: none; }
+.pal { position: fixed; inset: 0; z-index: 10; background: rgba(8,12,16,0.55); display: flex; justify-content: center; padding: 10vh 16px 16px; }
+.pal-box { width: 100%; max-width: 620px; max-height: 70vh; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.30); }
+.pal-input { font: 14px "JetBrains Mono", ui-monospace, monospace; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); outline: none; }
+.pal-list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; }
+.pal-item { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 10px; align-items: baseline; padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+.pal-item[aria-selected="true"] { background: var(--accent-soft); }
+.pal-cmd { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
+.pal-where { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.pal-blurb { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal-item.pinned .pal-cmd::after { content: " \2605"; font-size: 10px; color: var(--amber); }
+.pal-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
+.pal-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 9px 12px; border-top: 1px solid var(--line); background: var(--ground); font-size: 11px; color: var(--muted); }
+.pal-foot span { display: inline-flex; align-items: center; gap: 5px; }
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 10px; }
+.tab { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--ink); }
+.tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.tab .n { font-weight: 500; opacity: 0.7; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.subtabs { display: flex; gap: 5px; flex-wrap: wrap; margin: 10px 0 2px; }
+.subtab { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.subtab[aria-selected="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.subtab:hover { color: var(--ink); }
+.subtab:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.subtab .n { font-weight: 500; opacity: 0.65; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.subtab.has-match { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+.subtab.no-match { opacity: 0.4; }
+.subtab[aria-selected="true"].has-match { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.agent-meta { margin: 12px 0 0; color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.agent-meta b { color: var(--ink); font-weight: 500; }
+.panel { margin-top: 4px; }
+.panel-lead { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+.panel-lead strong { color: var(--ink); font-weight: 500; }
+.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.linkish:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dir { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin-top: 10px; overflow: hidden; }
+.dir-head { display: grid; grid-template-columns: auto auto 1fr auto; gap: 0 12px; align-items: baseline; padding: 12px 14px; cursor: pointer; list-style: none; user-select: none; }
+.dir-head::-webkit-details-marker { display: none; }
+.dir-head:hover { background: var(--accent-soft); }
+.dir-head:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.caret { width: 0; height: 0; border-left: 5px solid var(--muted); border-top: 4px solid transparent; border-bottom: 4px solid transparent; align-self: center; transition: transform 120ms; }
+.dir[open] > .dir-head .caret { transform: rotate(90deg); }
+.dir-title { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.dir-lead { color: var(--muted); font-size: 13px; }
+.count { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dir > .rows { border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.row { display: grid; gap: 6px 14px; align-items: start; padding: 10px 14px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.skill-row, .row-head { grid-template-columns: minmax(170px,210px) minmax(220px,1fr) 86px 84px minmax(110px,170px) 52px; }
+.cmd-row, .cmd-head { grid-template-columns: minmax(180px,230px) 1fr minmax(110px,180px); }
+.flat-row { grid-template-columns: minmax(170px,210px) 1fr auto; align-items: center; }
+.row-head, .cmd-head { padding-block: 7px; background: var(--ground); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.row.hidden, .dir.hidden, .card.hidden { display: none; }
+.cell { min-width: 0; }
+.cell-blurb { font-size: 14.5px; }
+.row-head .cell, .cmd-head .cell { font-size: inherit; }
+.skill-row .cell-cmd, .flat-row .cell-cmd, .cmd-row .cell-cmd { cursor: pointer; }
+.row-head .cell-cmd, .cmd-head .cell-cmd { cursor: default; }
+.cell-uses { text-align: right; }
+.chip { font-size: 13.5px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; display: inline-flex; align-items: baseline; gap: 8px; }
+.chip-copy { cursor: pointer; border-radius: 4px; padding: 1px 4px; margin: -1px -4px; }
+.chip-copy:hover { background: var(--accent-soft); }
+.chip-copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chip-copy.copied { background: var(--amber-soft); }
+.chip-copy.copied .copy-hint { color: var(--amber); }
+.chip-copy.copied .copy-hint::before { content: "copied"; }
+.chip-static { color: var(--ink); font-weight: 500; }
+.copy-hint { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; font-weight: 500; color: var(--muted); opacity: 0; }
+.copy-hint::before { content: "copy"; }
+.chip-copy:hover .copy-hint, .chip-copy.copied .copy-hint, .chip-copy:focus-visible .copy-hint { opacity: 1; }
+.arg { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.dash { color: var(--muted); font-size: 12px; opacity: 0.6; }
+.badge { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.03em; padding: 2px 7px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; }
+.badge-auto { color: var(--auto); } .badge-invoke { color: var(--invoke); } .badge-plugin { color: var(--plugin); }
+.badge-spawn { color: var(--spawn); } .badge-scope { color: var(--scope); } .badge-auth { color: var(--auth); }
+.badge-model { color: var(--muted); border-style: dashed; } .badge-ro { color: var(--eff-inspect); }
+.badge-off { color: var(--eff-external); border-style: dashed; }
+.cell-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.uses-toggle { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.uses-toggle::after { content: " \25B8"; font-size: 10px; }
+.uses-toggle[aria-expanded="true"]::after { content: " \25BE"; }
+.uses-toggle:hover { border-color: var(--accent); }
+.uses-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.uses-none { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); opacity: 0.5; padding-right: 8px; }
+.tree { grid-column: 1 / -1; display: none; margin: 2px 0 4px 18px; padding-left: 14px; border-left: 2px solid var(--line); }
+.skill-row.open .tree { display: block; }
+.tree-note { margin: 0 0 6px; color: var(--muted); font-size: 12.5px; }
+.leaves { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.leaf { display: grid; grid-template-columns: 62px minmax(140px,190px) 1fr; gap: 0 12px; align-items: baseline; font-size: 13.5px; position: relative; }
+.leaf::before { content: ""; position: absolute; left: -16px; top: 0.75em; width: 10px; border-top: 2px solid var(--line); }
+.leaf .chip { font-size: 12.5px; }
+.leaf-kind { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.leaf-agent { color: var(--spawn); } .leaf-mcp { color: var(--auth); }
+.leaf-blurb { color: var(--muted); }
+.eff { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+.eff.eff-inspect { color: var(--eff-inspect); background: var(--eff-inspect-soft); }
+.eff.eff-draft { color: var(--eff-draft); background: var(--eff-draft-soft); }
+.eff.eff-build { color: var(--eff-build); background: var(--eff-build-soft); }
+.eff.eff-external { color: var(--eff-external); background: var(--eff-external-soft); }
+.skill-row { box-shadow: inset 3px 0 0 var(--line); }
+.skill-row.eff-inspect { box-shadow: inset 3px 0 0 var(--eff-inspect); }
+.skill-row.eff-draft { box-shadow: inset 3px 0 0 var(--eff-draft); }
+.skill-row.eff-build { box-shadow: inset 3px 0 0 var(--eff-build); }
+.skill-row.eff-external { box-shadow: inset 3px 0 0 var(--eff-external); }
+.eff-note { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+/* The chip is a filter, not a legend. The sentence that used to ride along
+   inside it wrapped the bar to two lines on every load; it lives in the
+   legend and the title now. */
+.effect-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+.effect-bar[hidden] { display: none; }
+.effect-chip { display: inline-flex; align-items: baseline; gap: 7px; background: transparent; border: 1px solid transparent; border-radius: 5px; padding: 3px 4px; cursor: pointer; }
+.effect-chip .n { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.effect-chip:hover { border-color: var(--line); }
+.effect-chip[aria-pressed="true"] { border-color: currentColor; }
+.effect-chip[aria-pressed="true"] .n { color: var(--ink); }
+.effect-chip.eff-inspect[aria-pressed="true"] { color: var(--eff-inspect); }
+.effect-chip.eff-draft[aria-pressed="true"] { color: var(--eff-draft); }
+.effect-chip.eff-build[aria-pressed="true"] { color: var(--eff-build); }
+.effect-chip.eff-external[aria-pressed="true"] { color: var(--eff-external); }
+.effect-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.card { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 16px 18px; margin-top: 12px; }
+.card h3 { margin: 0; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.card .card-lead { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+.card p { margin: 12px 0 0; font-size: 14.5px; }
+.card pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; line-height: 1.65; position: relative; }
+.card pre code { white-space: pre; }
+.pre-wrap { position: relative; }
+.pre-copy { position: absolute; top: 8px; right: 8px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 3px 7px; cursor: pointer; opacity: 0; transition: opacity 120ms; }
+.pre-wrap:hover .pre-copy, .pre-copy:focus-visible { opacity: 1; }
+.pre-copy.copied { color: var(--amber); border-color: var(--amber); }
+.card table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+.card th { text-align: left; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+.card td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.card tr:last-child td { border-bottom: 0; }
+.card td:first-child { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+.card table.keys td:first-child, .card table.links td:first-child { white-space: normal; }
+.card { overflow: hidden; }
+.pre-wrap { max-width: 100%; }
+.card pre { max-width: 100%; }
+.card table.keys td:first-child { color: var(--accent); font-weight: 600; }
+.card table.links td:first-child { white-space: normal; }
+.card a { color: var(--accent); }
+.note { margin-top: 12px; border-left: 3px solid var(--amber); background: var(--amber-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; }
+.note b { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); display: block; margin-bottom: 4px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%,12px); background: var(--ink); color: var(--ground); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; padding: 8px 14px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity 140ms, transform 140ms; z-index: 3; max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translate(-50%,0); }
+.legend { margin-top: 28px; color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.legend .badge { margin-right: 4px; }
+.foot { margin-top: 20px; color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; line-height: 1.7; }
+.foot .chip { font-size: 11.5px; font-weight: 500; }
+.age { display: block; color: var(--eff-build); }
+.empty { display: none; padding: 24px; color: var(--muted); text-align: center; }
+.empty.show { display: block; }
+/* 860, not 760: the six-column row grid needs about 792px of track and gap, so
+   between those two widths it overflowed its container. */
+@media (max-width: 860px) {
+  .wrap { padding-inline: 16px; }
+  .skill-row, .cmd-row, .flat-row { grid-template-columns: 1fr; gap: 4px; }
+  .row-head, .cmd-head { display: none; }
+  .cell-uses { text-align: left; }
+  .cell-tags { justify-content: flex-start; }
+  .leaf { grid-template-columns: 62px 1fr; }
+  .leaf-blurb { grid-column: 2; }
+  .dir-head { grid-template-columns: auto 1fr auto; }
+  .dir-lead { grid-column: 2 / -1; }
+  /* Every band wrapped here, which put 226px of sticky chrome on an 844px
+     screen. Rows of pills scroll sideways instead, the way a phone expects. */
+  .swipe { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px; }
+  .swipe::-webkit-scrollbar { display: none; }
+  .swipe > * { flex: 0 0 auto; }
+  .top { padding-top: 10px; }
+  .top h1 { font-size: 15px; margin-right: auto; white-space: normal; }
+  .tab { padding: 9px 10px; font-size: 11.5px; }
+  .subtab { padding: 8px 12px; }
+  .cc-open { flex: 1 1 auto; order: 3; }
+  .cc-pins { order: 4; }
+  .theme { min-width: 0; padding: 6px 10px; }
+  .controls { padding: 4px 0 8px; gap: 8px 12px; }
+  .filter { flex: 1 1 170px; max-width: calc(100% - 150px); }
+  .filter input { font-size: 16px; padding: 8px 10px; }
+  /* The bar takes a whole line, so it has to come last or it splits the
+     filter and the expand controls across three lines instead of one. */
+  .controls-end { order: 2; }
+  .effect-bar { order: 3; flex: 1 1 100%; min-width: 0; }
+  .effect-chip { padding: 6px 7px; }
+  .card { padding: 14px; }
+  .card table, .card thead, .card tbody, .card tr, .card td { display: block; width: 100%; }
+  .card thead { display: none; }
+  .card tr { border-bottom: 1px solid var(--line); padding: 8px 0; }
+  .card tr:last-child { border-bottom: 0; }
+  .card td { border-bottom: 0; padding: 2px 0; }
+  .card td:first-child { white-space: normal; color: var(--accent); font-weight: 600; }
+  .pre-copy { opacity: 1; }
+  .card table.links td:last-child { display: none; }
+  .card td:first-child { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .caret, .toast, .pre-copy { transition: none; } }
+</style>
+</head><body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+  <header class="top">
+    <div class="top-row">
+      <h1><span>skill</span> deck</h1>
+      <button class="cc-open" id="cc-open" type="button" aria-haspopup="dialog">copy anything<kbd class="kbd" id="cc-kbd">ctrl k</kbd></button>
+      <div class="cc-pins swipe" id="pins" role="group" aria-label="Pinned commands"></div>
+      <button class="theme" id="theme" type="button" aria-label="Color theme">system</button>
+    </div>
+    <div class="tabs swipe" role="tablist" aria-label="Agent"><button class="tab" role="tab" id="tab-claude-code" data-agent="claude-code" aria-selected="false" aria-controls="agent-claude-code">Claude Code<span class="n">10</span></button><button class="tab" role="tab" id="tab-example" data-agent="example" aria-selected="false" aria-controls="agent-example">Example CLI<span class="n">3</span></button></div>
+  </header>
+  <div class="controls">
+    <div class="filter">
+      <input id="filter" type="search" placeholder="narrow this view  ( / )" autocomplete="off" spellcheck="false" aria-label="Narrow the current view">
+      <span class="total" id="total"></span>
+    </div>
+    <div class="effect-bar swipe" id="effects" role="group" aria-label="Filter by effect"><button class="effect-chip eff-inspect" type="button" data-level="inspect" aria-pressed="false" title="Reads and reports. Nothing changes."><span class="eff eff-inspect">inspect</span><span class="n"></span></button><button class="effect-chip eff-draft" type="button" data-level="draft" aria-pressed="false" title="Produces text, a plan, or a doc. No code changes."><span class="eff eff-draft">draft</span><span class="n"></span></button><button class="effect-chip eff-build" type="button" data-level="build" aria-pressed="false" title="Edits code and files in the repo."><span class="eff eff-build">build</span><span class="n"></span></button><button class="effect-chip eff-external" type="button" data-level="external" aria-pressed="false" title="Changes something outside the repo."><span class="eff eff-external">external</span><span class="n"></span></button></div>
+    <div class="controls-end">
+      <button class="linkish" data-expand type="button">expand all</button>
+      <span class="sep" aria-hidden="true">/</span>
+      <button class="linkish" data-collapse type="button">collapse</button>
+    </div>
+  </div>
+  <main id="main" tabindex="-1"><section class="agent-panel" id="agent-claude-code" data-agent="claude-code" role="tabpanel" aria-labelledby="tab-claude-code" hidden>
+  <div class="agent-meta swipe"><span><b>claude</b></span><span>~/.claude</span><span>synced 2026-09-25</span></div>
+  <div class="subtabs swipe" role="tablist" aria-label="Claude Code sections"><button class="subtab" role="tab" data-sub="commands" aria-selected="false" aria-controls="panel-claude-code-commands">commands<span class="n">6</span></button><button class="subtab" role="tab" data-sub="skills" aria-selected="false" aria-controls="panel-claude-code-skills">skills<span class="n">10</span></button><button class="subtab" role="tab" data-sub="agents" aria-selected="false" aria-controls="panel-claude-code-agents">agents<span class="n">2</span></button><button class="subtab" role="tab" data-sub="mcps" aria-selected="false" aria-controls="panel-claude-code-mcps">mcps<span class="n">2</span></button><button class="subtab" role="tab" data-sub="plugins" aria-selected="false" aria-controls="panel-claude-code-plugins">plugins<span class="n">1</span></button><button class="subtab" role="tab" data-sub="reference" aria-selected="false" aria-controls="panel-claude-code-reference">reference<span class="n">2</span></button></div>
+  <div class="panel sub-panel" id="panel-claude-code-commands" data-sub="commands" role="tabpanel" hidden>
+<p class="panel-lead">Built into the CLI, not from your config. A short invented sample, not the real command list. Verified against <a href="https://docs.claude.com/en/docs/claude-code">the vendor docs</a> on 2026-09-25. Curated, not exhaustive.</p>
+<details class="dir" id="dir-claude-code-cmd-session" data-dir="claude-code-cmd-session" open>
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Session</span>
+    <span class="dir-lead">Starting, saving and clearing.</span>
+    <span class="count" data-count data-total="2">2</span>
+  </summary>
+  <ul class="rows">
+<li class="row cmd-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-arg">argument</div></li>
+<li class="row cmd-row" data-search="/clear drop the conversation and keep the working directory. session">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/clear" title="Copy /clear">/clear<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Drop the conversation and keep the working directory.</div>
+  <div class="cell cell-arg"><span class="dash">none</span></div>
+</li>
+<li class="row cmd-row" data-search="/resume pick up a previous session by name. [session] session">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/resume" title="Copy /resume">/resume<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Pick up a previous session by name.</div>
+  <div class="cell cell-arg"><code class="arg">[session]</code></div>
+</li>
+  </ul>
+</details>
+<details class="dir" id="dir-claude-code-cmd-config" data-dir="claude-code-cmd-config" open>
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Config</span>
+    <span class="dir-lead">What this install can reach.</span>
+    <span class="count" data-count data-total="2">2</span>
+  </summary>
+  <ul class="rows">
+<li class="row cmd-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-arg">argument</div></li>
+<li class="row cmd-row" data-search="/mcp list the mcp servers this session can see and their auth state. config">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/mcp" title="Copy /mcp">/mcp<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">List the MCP servers this session can see and their auth state.</div>
+  <div class="cell cell-arg"><span class="dash">none</span></div>
+</li>
+<li class="row cmd-row" data-search="/skills list the skills currently loaded. config">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/skills" title="Copy /skills">/skills<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">List the skills currently loaded.</div>
+  <div class="cell cell-arg"><span class="dash">none</span></div>
+</li>
+  </ul>
+</details>
+<details class="dir" id="dir-claude-code-flags" data-dir="claude-code-flags">
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Flags</span>
+    <span class="dir-lead">Command-line, not in-session.</span>
+    <span class="count" data-count data-total="2">2</span>
+  </summary>
+  <ul class="rows">
+<li class="row cmd-row" data-search="--print run one prompt and exit, for scripts and ci. flag">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="--print" title="Copy --print">--print<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Run one prompt and exit, for scripts and CI.</div>
+  <div class="cell cell-arg"><span class="dash">flag</span></div>
+</li>
+<li class="row cmd-row" data-search="--model pick the model for this run. flag">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="--model" title="Copy --model">--model<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Pick the model for this run.</div>
+  <div class="cell cell-arg"><span class="dash">flag</span></div>
+</li>
+  </ul>
+</details>
+  </div>
+  <div class="panel sub-panel" id="panel-claude-code-skills" data-sub="skills" role="tabpanel" hidden>
+<details class="dir" id="dir-claude-code-execution" data-dir="claude-code-execution">
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Execution</span>
+    <span class="dir-lead">How work gets planned, built and reviewed.</span>
+    <span class="count" data-count data-total="4">4</span>
+  </summary>
+  <ul class="rows">
+<li class="row row-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-effect">effect</div><div class="cell cell-mode">runs</div><div class="cell cell-arg">argument</div><div class="cell cell-uses">uses</div></li>
+<li class="row skill-row eff-inspect" id="row-claude-code-execution-survey" data-effect="inspect" data-search="/survey read the codebase and report how it actually fits together. [area to survey] auto inspect opens files. writes none. reader fans out across files and returns the conclusion, not the file dumps. execution">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/survey" title="Copy /survey">/survey<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Read the codebase and report how it actually fits together.<span class="eff-note">Opens files. Writes none.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-inspect">inspect</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[area to survey]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">1</button></div>
+  <div class="tree"><p class="tree-note">Spawns one reader per top-level directory on a whole-repo survey.</p><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-agent">agent</span><code class="chip chip-static">reader</code><span class="leaf-blurb">Fans out across files and returns the conclusion, not the file dumps.</span></li></ul></div>
+</li>
+<li class="row skill-row eff-draft" id="row-claude-code-execution-blueprint" data-effect="draft" data-search="/blueprint turn a change into a plan another engineer could execute cold. [what to plan] slash only draft writes the plan to docs/plans/. touches no product code. survey read the codebase and report how it actually fits together. execution">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/blueprint" title="Copy /blueprint">/blueprint<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Turn a change into a plan another engineer could execute cold.<span class="eff-note">Writes the plan to docs/plans/. Touches no product code.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-draft">draft</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><code class="arg">[what to plan]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">1</button></div>
+  <div class="tree"><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-skill">skill</span><code class="chip chip-static">survey</code><span class="leaf-blurb">Read the codebase and report how it actually fits together.</span></li></ul></div>
+</li>
+<li class="row skill-row eff-build" id="row-claude-code-execution-implement" data-effect="build" data-search="/implement build it: work in dependency order, then prove it with a fresh run. [what to build, or the plan to execute] auto build edits code, runs tests, may install project dependencies. stops before anything destructive. survey read the codebase and report how it actually fits together. check run the suite and report what broke, with the failing input. reviewer reads a diff against the stated intent and argues with it. execution">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/implement" title="Copy /implement">/implement<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Build it: work in dependency order, then prove it with a fresh run.<span class="eff-note">Edits code, runs tests, may install project dependencies. Stops before anything destructive.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-build">build</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[what to build, or the plan to execute]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">3</button></div>
+  <div class="tree"><p class="tree-note">Calls check after each unit of work rather than once at the end.</p><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-skill">skill</span><code class="chip chip-static">survey</code><span class="leaf-blurb">Read the codebase and report how it actually fits together.</span></li><li class="leaf"><span class="leaf-kind leaf-skill">skill</span><code class="chip chip-static">check</code><span class="leaf-blurb">Run the suite and report what broke, with the failing input.</span></li><li class="leaf"><span class="leaf-kind leaf-agent">agent</span><code class="chip chip-static">reviewer</code><span class="leaf-blurb">Reads a diff against the stated intent and argues with it.</span></li></ul></div>
+</li>
+<li class="row skill-row eff-inspect" id="row-claude-code-execution-check" data-effect="inspect" data-search="/check run the suite and report what broke, with the failing input. [suite or path] auto inspect runs tests. fixes nothing. execution">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/check" title="Copy /check">/check<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Run the suite and report what broke, with the failing input.<span class="eff-note">Runs tests. Fixes nothing.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-inspect">inspect</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[suite or path]</code></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+  </ul>
+</details>
+<details class="dir" id="dir-claude-code-writing" data-dir="claude-code-writing">
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Writing</span>
+    <span class="dir-lead">Prose that sounds like a person wrote it.</span>
+    <span class="count" data-count data-total="3">3</span>
+  </summary>
+  <ul class="rows">
+<li class="row row-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-effect">effect</div><div class="cell cell-mode">runs</div><div class="cell cell-arg">argument</div><div class="cell cell-uses">uses</div></li>
+<li class="row skill-row eff-draft" id="row-claude-code-writing-draft" data-effect="draft" data-search="/draft write a first pass in your own voice from notes or a transcript. [what to write] auto draft writes to drafts/. never publishes. notes reads the notes store this config is pointed at. writing">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/draft" title="Copy /draft">/draft<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Write a first pass in your own voice from notes or a transcript.<span class="eff-note">Writes to drafts/. Never publishes.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-draft">draft</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[what to write]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">1</button></div>
+  <div class="tree"><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-mcp">mcp</span><code class="chip chip-static">notes</code><span class="leaf-blurb">Reads the notes store this config is pointed at.</span></li></ul></div>
+</li>
+<li class="row skill-row eff-draft" id="row-claude-code-writing-tighten" data-effect="draft" data-search="/tighten cut a draft by a third without losing an argument. [file or paste] auto draft writing">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/tighten" title="Copy /tighten">/tighten<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Cut a draft by a third without losing an argument.</div>
+  <div class="cell cell-effect"><span class="eff eff-draft">draft</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[file or paste]</code></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+<li class="row skill-row eff-external" id="row-claude-code-writing-publish" data-effect="external" data-search="/publish push an approved draft to the connected site and return the live url. [draft] slash only external reaches outside the repo. asks once before it posts. site the publishing target this config is pointed at. writing">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/publish" title="Copy /publish">/publish<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Push an approved draft to the connected site and return the live URL.<span class="eff-note">Reaches outside the repo. Asks once before it posts.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-external">external</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><code class="arg">[draft]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">1</button></div>
+  <div class="tree"><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-mcp">mcp</span><code class="chip chip-static">site</code><span class="leaf-blurb">The publishing target this config is pointed at.</span></li></ul></div>
+</li>
+  </ul>
+</details>
+<details class="dir" id="dir-claude-code-config" data-dir="claude-code-config">
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Config</span>
+    <span class="dir-lead">This setup itself.</span>
+    <span class="count" data-count data-total="3">3</span>
+  </summary>
+  <ul class="rows">
+<li class="row row-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-effect">effect</div><div class="cell cell-mode">runs</div><div class="cell cell-arg">argument</div><div class="cell cell-uses">uses</div></li>
+<li class="row skill-row eff-inspect" id="row-claude-code-config-audit-config" data-effect="inspect" data-search="/audit-config report what is installed, what is stale and what nothing reaches. slash only inspect reads the config directory. changes nothing. config">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/audit-config" title="Copy /audit-config">/audit-config<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Report what is installed, what is stale and what nothing reaches.<span class="eff-note">Reads the config directory. Changes nothing.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-inspect">inspect</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><span class="dash">none</span></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+<li class="row skill-row eff-build" id="row-claude-code-config-rebuild-deck" data-effect="build" data-search="/rebuild-deck resync the deck from the configs and rebuild the page. slash only build writes data/ and index.html in the deck repo. config">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/rebuild-deck" title="Copy /rebuild-deck">/rebuild-deck<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Resync the deck from the configs and rebuild the page.<span class="eff-note">Writes data/ and index.html in the deck repo.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-build">build</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><span class="dash">none</span></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+<li class="row skill-row eff-build" id="row-claude-code-config-new-skill" data-effect="build" data-search="/new-skill scaffold a skill with frontmatter that will actually trigger. [what it should do] auto build creates skills/&lt;name&gt;/skill.md. config">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/new-skill" title="Copy /new-skill">/new-skill<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Scaffold a skill with frontmatter that will actually trigger.<span class="eff-note">Creates skills/&lt;name&gt;/SKILL.md.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-build">build</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[what it should do]</code></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+  </ul>
+</details>
+  </div>
+  <div class="panel sub-panel" id="panel-claude-code-agents" data-sub="agents" role="tabpanel" hidden>
+<p class="panel-lead">Subagents a skill spawns for you. They are not commands, so there is nothing to copy.</p>
+<ul class="rows">
+<li class="row flat-row" data-search="reader fans out across files and returns the conclusion, not the file dumps. answering a question that spans more files than fit in one context. /survey haiku read-only">
+  <div class="cell cell-cmd"><code class="chip chip-static">reader</code></div>
+  <div class="cell cell-blurb">Fans out across files and returns the conclusion, not the file dumps.</div>
+  <div class="cell cell-tags"><span class="badge badge-spawn">spawned by /survey</span><span class="badge badge-model">haiku</span><span class="badge badge-ro">read-only</span></div>
+</li>
+<li class="row flat-row" data-search="reviewer reads a diff against the stated intent and argues with it. before a change lands. /implement sonnet read-only">
+  <div class="cell cell-cmd"><code class="chip chip-static">reviewer</code></div>
+  <div class="cell cell-blurb">Reads a diff against the stated intent and argues with it.</div>
+  <div class="cell cell-tags"><span class="badge badge-spawn">spawned by /implement</span><span class="badge badge-model">sonnet</span><span class="badge badge-ro">read-only</span></div>
+</li>
+</ul>
+  </div>
+  <div class="panel sub-panel" id="panel-claude-code-mcps" data-sub="mcps" role="tabpanel" hidden>
+<p class="panel-lead">Registered in this config. This is an inventory, not a live health check. Confirm with <code class="arg">claude mcp list</code>.</p>
+<ul class="rows">
+<li class="row flat-row" data-search="notes the notes store this config reads from. user env">
+  <div class="cell cell-cmd"><code class="chip chip-static">notes</code></div>
+  <div class="cell cell-blurb">The notes store this config reads from.</div>
+  <div class="cell cell-tags"><span class="badge badge-scope">user</span><span class="badge badge-auth">env</span></div>
+</li>
+<li class="row flat-row" data-search="site the publishing target /publish writes to. project oauth">
+  <div class="cell cell-cmd"><code class="chip chip-static">site</code></div>
+  <div class="cell cell-blurb">The publishing target /publish writes to.</div>
+  <div class="cell cell-tags"><span class="badge badge-scope">project</span><span class="badge badge-auth">oauth</span></div>
+</li>
+</ul>
+  </div>
+  <div class="panel sub-panel" id="panel-claude-code-plugins" data-sub="plugins" role="tabpanel" hidden>
+<p class="panel-lead">Type the prefix in a session to see the commands a plugin adds.</p>
+<ul class="rows">
+<li class="row flat-row" data-search="/house: house voice rules and the review checklist that enforces them. plugin">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="/house:" title="Copy /house:">/house:<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">House voice rules and the review checklist that enforces them.</div>
+  <div class="cell cell-tags"><span class="badge badge-plugin">plugin</span></div>
+</li>
+</ul>
+  </div>
+  <div class="panel sub-panel" id="panel-claude-code-reference" data-sub="reference" role="tabpanel" hidden>
+<section class="card" id="card-reading-this" data-search="reading this deck what the columns mean and why the effect column exists. every row is something you can type. click the command to copy it. the uses number opens the tree of what that command delegates to, so you can see the blast radius before you run it. column what it tells you effect how far the blast radius goes, from reads-only to changes-things-outside-the-repo. runs whether the agent can reach for it on its own, or only when you type it. argument what to put after the command. square brackets are placeholders. uses how many other skills, agents or servers it pulls in. the effect column is a judgment you write in your config, not something the tool can infer. an unreviewed deck will say build for everything.">
+  <h3>Reading this deck</h3>
+  <p class="card-lead">What the columns mean and why the effect column exists.</p>
+  <p>Every row is something you can type. Click the command to copy it. The uses number opens the tree of what that command delegates to, so you can see the blast radius before you run it.</p>
+  <table class="keys"><thead><tr><th>Column</th><th>What it tells you</th></tr></thead><tbody><tr><td>effect</td><td>How far the blast radius goes, from reads-only to changes-things-outside-the-repo.</td></tr><tr><td>runs</td><td>Whether the agent can reach for it on its own, or only when you type it.</td></tr><tr><td>argument</td><td>What to put after the command. Square brackets are placeholders.</td></tr><tr><td>uses</td><td>How many other skills, agents or servers it pulls in.</td></tr></tbody></table>
+  <div class="note"><b>correction</b>The effect column is a judgment you write in your config, not something the tool can infer. An unreviewed deck will say build for everything.</div>
+</section>
+<section class="card" id="card-make-it-yours" data-search="make it yours three commands and one file. point sources.json at your config, then sync and build. the skills-dir adapter needs nothing but a skills directory, so most setups work without writing any code. git clone &lt;this repo&gt; skill-deck cd skill-deck $editor data/sources.json # set path to your config node scripts/sync.mjs node scripts/build.mjs then open index.html. if you have claude code, skip the editing step: ask it to set up the skill deck for your config and it will read skills/deck-setup/skill.md and wire it up, including writing blurbs that read as english rather than as model trigger text. adapters scripts/adapters/ what a tab is data/&lt;id&gt;.json brand and tab order data/deck.json">
+  <h3>Make it yours</h3>
+  <p class="card-lead">Three commands and one file.</p>
+  <p>Point sources.json at your config, then sync and build. The skills-dir adapter needs nothing but a skills directory, so most setups work without writing any code.</p>
+  <div class="pre-wrap"><button class="pre-copy" type="button">copy</button><pre><code>git clone &lt;this repo&gt; skill-deck
+cd skill-deck
+$EDITOR data/sources.json    # set path to your config
+node scripts/sync.mjs
+node scripts/build.mjs</code></pre></div>
+  <p>Then open index.html. If you have Claude Code, skip the editing step: ask it to set up the skill deck for your config and it will read skills/deck-setup/SKILL.md and wire it up, including writing blurbs that read as English rather than as model trigger text.</p>
+  <table class="links"><tbody><tr><td><a href="scripts/adapters/" rel="noreferrer">Adapters</a></td><td>scripts/adapters/</td></tr><tr><td><a href="data/&lt;id&gt;.json" rel="noreferrer">What a tab is</a></td><td>data/&lt;id&gt;.json</td></tr><tr><td><a href="data/deck.json" rel="noreferrer">Brand and tab order</a></td><td>data/deck.json</td></tr></tbody></table>
+</section>
+  </div>
+</section>
+<section class="agent-panel" id="agent-example" data-agent="example" role="tabpanel" aria-labelledby="tab-example" hidden>
+  <div class="agent-meta swipe"><span><b>example</b></span><span>a second agent, to prove the point</span><span>~/.example</span><span>synced 2026-09-25</span></div>
+  <div class="subtabs swipe" role="tablist" aria-label="Example CLI sections"><button class="subtab" role="tab" data-sub="skills" aria-selected="false" aria-controls="panel-example-skills">skills<span class="n">3</span></button><button class="subtab" role="tab" data-sub="mcps" aria-selected="false" aria-controls="panel-example-mcps">mcps<span class="n">1</span></button></div>
+  <div class="panel sub-panel" id="panel-example-skills" data-sub="skills" role="tabpanel" hidden>
+<details class="dir" id="dir-example-basics" data-dir="example-basics">
+  <summary class="dir-head">
+    <span class="caret" aria-hidden="true"></span>
+    <span class="dir-title">Basics</span>
+    <span class="dir-lead">Enough to show a second command prefix.</span>
+    <span class="count" data-count data-total="3">3</span>
+  </summary>
+  <ul class="rows">
+<li class="row row-head" aria-hidden="true"><div class="cell cell-cmd">command</div><div class="cell cell-blurb">what it does</div><div class="cell cell-effect">effect</div><div class="cell cell-mode">runs</div><div class="cell cell-arg">argument</div><div class="cell cell-uses">uses</div></li>
+<li class="row skill-row eff-inspect" id="row-example-basics-hello" data-effect="inspect" data-search="$hello print a greeting and exit. [name] slash only inspect basics">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="$hello" title="Copy $hello">$hello<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Print a greeting and exit.</div>
+  <div class="cell cell-effect"><span class="eff eff-inspect">inspect</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><code class="arg">[name]</code></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+<li class="row skill-row eff-build" id="row-example-basics-tidy" data-effect="build" data-search="$tidy format and sort the files you point it at. [path] auto build rewrites files in place. basics">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="$tidy" title="Copy $tidy">$tidy<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Format and sort the files you point it at.<span class="eff-note">Rewrites files in place.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-build">build</span></div>
+  <div class="cell cell-mode"><span class="badge badge-auto">auto</span></div>
+  <div class="cell cell-arg"><code class="arg">[path]</code></div>
+  <div class="cell cell-uses"><span class="uses-none" title="Delegates to nothing">0</span></div>
+  
+</li>
+<li class="row skill-row eff-external" id="row-example-basics-ship" data-effect="external" data-search="$ship tag a release and push it. [version] slash only external pushes to the remote. not reversible from here. tidy format and sort the files you point it at. basics">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="$ship" title="Copy $ship">$ship<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">Tag a release and push it.<span class="eff-note">Pushes to the remote. Not reversible from here.</span></div>
+  <div class="cell cell-effect"><span class="eff eff-external">external</span></div>
+  <div class="cell cell-mode"><span class="badge badge-invoke">slash only</span></div>
+  <div class="cell cell-arg"><code class="arg">[version]</code></div>
+  <div class="cell cell-uses"><button class="uses-toggle" type="button" aria-expanded="false">1</button></div>
+  <div class="tree"><ul class="leaves"><li class="leaf"><span class="leaf-kind leaf-skill">skill</span><code class="chip chip-static">tidy</code><span class="leaf-blurb">Format and sort the files you point it at.</span></li></ul></div>
+</li>
+  </ul>
+</details>
+  </div>
+  <div class="panel sub-panel" id="panel-example-mcps" data-sub="mcps" role="tabpanel" hidden>
+<p class="panel-lead">Registered in this config. This is an inventory, not a live health check. Confirm with <code class="arg">example mcp status</code>.</p>
+<ul class="rows">
+<li class="row flat-row" data-search="registry where $ship publishes to. user token">
+  <div class="cell cell-cmd"><code class="chip chip-static">registry</code></div>
+  <div class="cell cell-blurb">Where $ship publishes to.</div>
+  <div class="cell cell-tags"><span class="badge badge-scope">user</span><span class="badge badge-auth">token</span></div>
+</li>
+</ul>
+  </div>
+</section></main>
+  <p class="empty" id="empty">Nothing matches that filter.</p>
+  <div class="legend">
+    <span><span class="eff eff-inspect">inspect</span> Reads and reports. Nothing changes.</span>
+    <span><span class="eff eff-draft">draft</span> Produces text, a plan, or a doc. No code changes.</span>
+    <span><span class="eff eff-build">build</span> Edits code and files in the repo.</span>
+    <span><span class="eff eff-external">external</span> Changes something outside the repo.</span>
+    <span><span class="badge badge-auto">auto</span>The agent can pick it up on its own when the request matches.</span>
+    <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
+    <span><code class="arg">[arg]</code> What to put after the command.</span>
+    <span>Click a command to copy it. The <b>uses</b> number opens the tree of what it delegates to.</span>
+  </div>
+  <p class="foot" data-built="2026-09-25">Built 2026-09-25 from data/. claude-code 10 · example 3. Refresh from the config repos with <code class="chip chip-copy" role="button" tabindex="0" data-copy="node scripts/sync.mjs &amp;&amp; node scripts/build.mjs" title="Copy the rebuild command">node scripts/sync.mjs &amp;&amp; node scripts/build.mjs<span class="copy-hint" aria-hidden="true"></span></code><span class="age" id="age"></span></p>
+</div>
+<div class="pal" id="pal" hidden>
+  <div class="pal-box" role="dialog" aria-modal="true" aria-label="Copy anything">
+    <input class="pal-input" id="pal-input" type="text" autocomplete="off" spellcheck="false" placeholder="copy anything from any tab" aria-label="Search every command">
+    <ul class="pal-list" id="pal-list" role="listbox" aria-label="Results"></ul>
+    <div class="pal-foot"><span><kbd class="kbd">enter</kbd> copy</span><span><kbd class="kbd">alt enter</kbd> pin</span><span><kbd class="kbd">ctrl enter</kbd> go to it</span><span><kbd class="kbd">esc</kbd> close</span></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>(function () {
+  var input = document.getElementById('filter');
+  var total = document.getElementById('total');
+  var empty = document.getElementById('empty');
+  var toast = document.getElementById('toast');
+  var qs = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  var tabs = qs('.tab');
+  var agentPanels = qs('.agent-panel');
+  var levelFilter = null;
+  var filtering = false;
+  var savedOpen = null;
+
+  // Theme cycles system -> light -> dark. The head script applies the stored
+  // value before first paint so there is no flash.
+  var themeBtn = document.getElementById('theme');
+  var THEMES = ['system', 'light', 'dark'];
+  var theme = THEMES.indexOf(store.get('deck.theme')) === -1 ? 'system' : store.get('deck.theme');
+  function applyTheme(t) {
+    theme = t;
+    if (t === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', t);
+    if (themeBtn) themeBtn.textContent = t;
+  }
+  applyTheme(theme);
+  if (themeBtn) themeBtn.addEventListener('click', function () {
+    var next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+    store.set('deck.theme', next);
+    applyTheme(next);
+  });
+
+  // Which uses trees are open, so a refresh lands where you left off.
+  function readOpen() { var v = store.get('deck.open'); return v ? v.split(',') : []; }
+  function markOpen(id, on) {
+    if (!id) return;
+    var list = readOpen().filter(function (x) { return x && x !== id; });
+    if (on) list.push(id);
+    store.set('deck.open', list.join(','));
+  }
+
+  function currentAgent() {
+    var p = agentPanels.filter(function (p) { return !p.hidden; })[0];
+    return p ? p.dataset.agent : null;
+  }
+  function currentPanel() {
+    var a = currentAgent();
+    if (!a) return null;
+    return qs('.sub-panel', document.getElementById('agent-' + a)).filter(function (p) { return !p.hidden; })[0] || null;
+  }
+
+  // Keeps the address bar pointing at what you are looking at, so the URL is
+  // copyable. replaceState rather than assigning location.hash, which would
+  // pile up history entries and fire hashchange.
+  function syncHash() {
+    var a = currentAgent();
+    if (!a || !window.history || !history.replaceState) return;
+    var p = currentPanel();
+    var h = '#' + a + (p ? '/' + p.dataset.sub : '');
+    if (location.hash !== h) history.replaceState(null, '', h);
+  }
+
+  // One control row for the whole deck, but it narrows a section, so it has to
+  // read after the section pills rather than above them. Move the single node
+  // into whichever agent panel is showing instead of emitting one per panel.
+  var controls = document.querySelector('.controls');
+  function placeControls(id) {
+    var host = document.getElementById('agent-' + id);
+    if (!host || !controls) return;
+    var subs = host.querySelector('.subtabs');
+    if (subs && subs.nextSibling !== controls) subs.parentNode.insertBefore(controls, subs.nextSibling);
+  }
+
+  function selectAgent(id, remember) {
+    if (!document.getElementById('agent-' + id)) id = tabs[0].dataset.agent;
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.agent === id)); });
+    agentPanels.forEach(function (p) { p.hidden = p.dataset.agent !== id; });
+    placeControls(id);
+    if (remember) store.set('deck.agent', id);
+    var want = store.get('deck.sub.' + id);
+    var subs = qs('.subtab', document.getElementById('agent-' + id));
+    var names = subs.map(function (s) { return s.dataset.sub; });
+    selectSub(id, names.indexOf(want) !== -1 ? want : names[0], false);
+    if (remember) syncHash();
+  }
+
+  function selectSub(agent, sub, remember) {
+    var host = document.getElementById('agent-' + agent);
+    if (!host) return;
+    qs('.subtab', host).forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.sub === sub)); });
+    qs('.sub-panel', host).forEach(function (p) { p.hidden = p.dataset.sub !== sub; });
+    if (remember) { store.set('deck.sub.' + agent, sub); syncHash(); }
+    applyFilter();
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { selectAgent(t.dataset.agent, true); });
+  });
+  qs('.subtab').forEach(function (t) {
+    t.addEventListener('click', function () { selectSub(t.closest('.agent-panel').dataset.agent, t.dataset.sub, true); });
+  });
+  // Arrow keys move between tabs in the same row, as the tablist pattern expects.
+  function arrowNav(list) {
+    list.forEach(function (t) {
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var peers = list.filter(function (x) { return x.offsetParent !== null; });
+        var at = peers.indexOf(t);
+        var next = peers[(at + d + peers.length) % peers.length];
+        next.focus(); next.click();
+      });
+    });
+  }
+  arrowNav(tabs);
+  qs('.agent-panel').forEach(function (p) { arrowNav(qs('.subtab', p)); });
+
+  function recount() {
+    var panel = currentPanel();
+    if (!panel) { total.textContent = ''; empty.classList.remove('show'); return; }
+    qs('.dir', panel).forEach(function (d) {
+      var n = qs('.row:not(.hidden):not(.row-head):not(.cmd-head)', d).length;
+      var c = d.querySelector('[data-count]');
+      if (c) c.textContent = n === Number(c.dataset.total) ? n : n + ' of ' + c.dataset.total;
+      d.classList.toggle('hidden', n === 0);
+    });
+    var rows = qs('.row:not(.hidden):not(.row-head):not(.cmd-head)', panel).length;
+    var cards = qs('.card:not(.hidden)', panel).length;
+    var n = rows + cards;
+    total.textContent = n + ' shown';
+    empty.classList.toggle('show', n === 0);
+  }
+
+  function applyFilter() {
+    var q = input.value.trim().toLowerCase().replace(/^\//, '');
+    var panel = currentPanel();
+    qs('.row:not(.row-head):not(.cmd-head)').forEach(function (r) {
+      var textMiss = q !== '' && (r.getAttribute('data-search') || '').indexOf(q) === -1;
+      var levelMiss = levelFilter !== null && r.hasAttribute('data-effect') && r.getAttribute('data-effect') !== levelFilter;
+      r.classList.toggle('hidden', textMiss || levelMiss);
+    });
+    qs('.card').forEach(function (c) {
+      c.classList.toggle('hidden', q !== '' && (c.getAttribute('data-search') || '').indexOf(q) === -1);
+    });
+    // The filter only shows the section you are on, so the pills carry the
+    // match count for the others. Without this, searching "notion" from the
+    // commands tab reads as "no results" when the hits are two tabs over.
+    var agent = currentAgent();
+    if (agent) {
+      qs('.subtab', document.getElementById('agent-' + agent)).forEach(function (t) {
+        var panel = document.getElementById('panel-' + agent + '-' + t.dataset.sub);
+        var n = panel ? panel.querySelectorAll('.row:not(.hidden):not(.row-head):not(.cmd-head), .card:not(.hidden)').length : 0;
+        var span = t.querySelector('.n');
+        if (span) span.textContent = n;
+        t.classList.toggle('has-match', (q !== '' || levelFilter !== null) && n > 0);
+        t.classList.toggle('no-match', (q !== '' || levelFilter !== null) && n === 0);
+      });
+    }
+
+    // Chip counts answer "how much is behind this filter" before you press it,
+    // so they count the text query only. Counting the level filter too would
+    // zero every chip the moment you pressed one.
+    var bar = document.getElementById('effects');
+    if (bar && panel) {
+      var scoped = qs('.row[data-effect]', panel);
+      bar.hidden = scoped.length === 0;
+      qs('.effect-chip', bar).forEach(function (c) {
+        var n = scoped.filter(function (r) {
+          if (r.getAttribute('data-effect') !== c.dataset.level) return false;
+          return q === '' || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
+        }).length;
+        var span = c.querySelector('.n');
+        if (span) span.textContent = n;
+        c.disabled = n === 0 && levelFilter !== c.dataset.level;
+        c.style.opacity = c.disabled ? '0.4' : '';
+      });
+    }
+
+    var active = q !== '' || levelFilter !== null;
+    var dirs = qs('.dir');
+    if (active && !filtering) { filtering = true; savedOpen = dirs.map(function (d) { return d.open; }); }
+    if (active) { dirs.forEach(function (d) { d.open = true; }); }
+    else if (filtering) { filtering = false; dirs.forEach(function (d, i) { d.open = savedOpen ? savedOpen[i] : d.open; }); }
+    recount();
+  }
+
+  input.addEventListener('input', applyFilter);
+  qs('.effect-chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var lvl = c.dataset.level;
+      levelFilter = levelFilter === lvl ? null : lvl;
+      qs('.effect-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o.dataset.level === levelFilter)); });
+      applyFilter();
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    // The palette owns the keyboard while it is up.
+    if (typeof palOpen === 'function' && palOpen()) return;
+    var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''));
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); openPal(); return; }
+    // alt+1..9 copies that pinned command from anywhere on the page.
+    if (e.altKey && !e.ctrlKey && !e.metaKey && /^[1-9]$/.test(e.key)) {
+      var pinBtn = qs('.pin', pinsHost)[Number(e.key) - 1];
+      if (pinBtn) { e.preventDefault(); pinBtn.click(); }
+      return;
+    }
+    if (e.key === '/' && !typing) { e.preventDefault(); input.focus(); input.select(); }
+    if (e.key === 'Escape' && document.activeElement === input) { input.value = ''; applyFilter(); input.blur(); }
+  });
+
+  qs('.dir').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (filtering) return;
+      store.set('deck.dir.' + d.dataset.dir, d.open ? '1' : '0');
+    });
+    if (store.get('deck.dir.' + d.dataset.dir) === '1') d.open = true;
+  });
+
+  function flash(el, text) {
+    el.classList.add('copied');
+    setTimeout(function () { el.classList.remove('copied'); }, 1200);
+    toast.textContent = 'copied ' + text;
+    toast.classList.add('show');
+    clearTimeout(toast._h);
+    toast._h = setTimeout(function () { toast.classList.remove('show'); }, 1400);
+  }
+  function fallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.top = '-1000px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  function copy(el, text, label) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { flash(el, label); }, function () { fallback(text); flash(el, label); });
+    } else { fallback(text); flash(el, label); }
+  }
+  qs('.chip-copy').forEach(function (c) {
+    var t = c.getAttribute('data-copy');
+    c.addEventListener('click', function (e) { e.stopPropagation(); copy(c, t, t); });
+    c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(c, t, t); } });
+  });
+  qs('.cell-cmd').forEach(function (cell) {
+    cell.addEventListener('click', function (e) {
+      var c = cell.querySelector('.chip-copy');
+      if (c && e.target !== c && !c.contains(e.target)) copy(c, c.getAttribute('data-copy'), c.getAttribute('data-copy'));
+    });
+  });
+  qs('.pre-copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var pre = b.parentNode.querySelector('pre');
+      copy(b, pre ? pre.textContent : '', 'snippet');
+    });
+  });
+  qs('.uses-toggle').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var r = b.closest('.skill-row');
+      var open = !r.classList.contains('open');
+      r.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', String(open));
+      markOpen(r.id, open);
+    });
+  });
+  function setAll(open) {
+    var panel = currentPanel();
+    if (!panel) return;
+    qs('.uses-toggle', panel).forEach(function (b) {
+      var r = b.closest('.skill-row');
+      r.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', String(open));
+      markOpen(r.id, open);
+    });
+    qs('.dir', panel).forEach(function (d) { d.open = open; });
+  }
+  qs('[data-expand]').forEach(function (b) { b.addEventListener('click', function () { setAll(true); }); });
+  qs('[data-collapse]').forEach(function (b) { b.addEventListener('click', function () { setAll(false); }); });
+
+  (function () {
+    var f = document.querySelector('.foot');
+    var built = new Date(f.getAttribute('data-built'));
+    var days = Math.floor((Date.now() - built.getTime()) / 86400000);
+    if (days > 30) document.getElementById('age').textContent =
+      'Built ' + days + ' days ago. Configs may have moved since. Run node scripts/sync.mjs && node scripts/build.mjs.';
+  })();
+
+  // ---- command center ----------------------------------------------------
+  // Every copyable thing in the deck already carries data-copy, so the index is
+  // scraped from the DOM rather than emitted by the build. Hidden panels are
+  // still in the DOM, which is what makes the search cross-tab.
+  var pal = document.getElementById('pal');
+  var palInput = document.getElementById('pal-input');
+  var palList = document.getElementById('pal-list');
+  var pinsHost = document.getElementById('pins');
+  var mac = /Mac|iPhone|iPad/.test(navigator.platform || '');
+  var results = [];
+  var at = 0;
+  var index = qs('[data-copy]').map(function (el) {
+    var row = el.closest('.row');
+    var panel = el.closest('.agent-panel');
+    var sub = el.closest('.sub-panel');
+    var tab = panel ? document.getElementById('tab-' + panel.dataset.agent) : null;
+    var blurbEl = row ? row.querySelector('.cell-blurb') : null;
+    var text = el.getAttribute('data-copy') || '';
+    var agent = panel ? panel.dataset.agent : '';
+    var blurb = blurbEl ? blurbEl.textContent.trim().replace(/\s+/g, ' ') : '';
+    return {
+      text: text, agent: agent, key: agent + '|' + text,
+      label: tab ? tab.childNodes[0].textContent.trim() : 'deck',
+      sub: sub ? sub.dataset.sub : '', blurb: blurb, rowId: row ? row.id : '',
+      hay: (text + ' ' + blurb + ' ' + agent).toLowerCase()
+    };
+  });
+  var byKey = {};
+  index.forEach(function (it) { if (!byKey[it.key]) byKey[it.key] = it; });
+
+  function readPins() {
+    var v = store.get('deck.pins');
+    return (v ? v.split('\n') : []).filter(function (k) { return byKey[k]; });
+  }
+  function writePins(list) { store.set('deck.pins', list.join('\n')); renderPins(); }
+  function togglePin(key) {
+    var list = readPins();
+    var i = list.indexOf(key);
+    if (i === -1) { if (list.length < 9) list.push(key); }
+    else list.splice(i, 1);
+    writePins(list);
+  }
+
+  function renderPins() {
+    var list = readPins();
+    pinsHost.innerHTML = '';
+    if (!list.length) {
+      var hint = document.createElement('span');
+      hint.className = 'cc-hint';
+      hint.textContent = 'pin from the palette';
+      pinsHost.appendChild(hint);
+      return;
+    }
+    list.forEach(function (key, i) {
+      var it = byKey[key];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pin';
+      b.title = it.text + '  (' + (mac ? 'opt' : 'alt') + '+' + (i + 1) + ')';
+      b.innerHTML = '<span class="pin-n"></span><span class="pin-t"></span>';
+      b.querySelector('.pin-n').textContent = String(i + 1);
+      b.querySelector('.pin-t').textContent = it.text;
+      b.addEventListener('click', function () { copy(b, it.text, it.text); });
+      pinsHost.appendChild(b);
+    });
+  }
+
+  function render() {
+    var q = palInput.value.trim().toLowerCase();
+    var words = q ? q.split(/\s+/) : [];
+    results = index.filter(function (it) {
+      return words.every(function (w) { return it.hay.indexOf(w) !== -1; });
+    }).sort(function (a, b) {
+      var aa = q && a.text.toLowerCase().indexOf(q) === 0 ? 0 : 1;
+      var bb = q && b.text.toLowerCase().indexOf(q) === 0 ? 0 : 1;
+      return aa - bb || a.text.length - b.text.length;
+    }).slice(0, 50);
+    at = 0;
+    palList.innerHTML = '';
+    if (!results.length) {
+      var li = document.createElement('li');
+      li.className = 'pal-empty';
+      li.textContent = 'Nothing matches that.';
+      palList.appendChild(li);
+      return;
+    }
+    var pinned = readPins();
+    results.forEach(function (it, i) {
+      var li = document.createElement('li');
+      li.className = 'pal-item' + (pinned.indexOf(it.key) === -1 ? '' : ' pinned');
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', String(i === 0));
+      li.innerHTML = '<span class="pal-cmd"></span><span class="pal-where"></span><span class="pal-blurb"></span>';
+      li.querySelector('.pal-cmd').textContent = it.text;
+      li.querySelector('.pal-where').textContent = it.sub ? it.label + ' / ' + it.sub : it.label;
+      li.querySelector('.pal-blurb').textContent = it.blurb;
+      li.addEventListener('click', function (e) { at = i; choose(e.ctrlKey || e.metaKey ? 'go' : 'copy'); });
+      palList.appendChild(li);
+    });
+  }
+
+  function move(d) {
+    if (!results.length) return;
+    var items = qs('.pal-item', palList);
+    items[at].setAttribute('aria-selected', 'false');
+    at = (at + d + results.length) % results.length;
+    items[at].setAttribute('aria-selected', 'true');
+    items[at].scrollIntoView({ block: 'nearest' });
+  }
+
+  function choose(how) {
+    var it = results[at];
+    if (!it) return;
+    if (how === 'pin') { togglePin(it.key); render(); return; }
+    if (how === 'go') {
+      closePal();
+      if (it.agent) {
+        selectAgent(it.agent, true);
+        if (it.sub) selectSub(it.agent, it.sub, true);
+      }
+      var row = it.rowId ? document.getElementById(it.rowId) : null;
+      if (row) {
+        var d = row.closest('details');
+        if (d) d.open = true;
+        row.scrollIntoView({ block: 'center' });
+        var chip = row.querySelector('.chip-copy');
+        if (chip) chip.focus();
+      }
+      return;
+    }
+    copy(palList, it.text, it.text);
+    closePal();
+  }
+
+  function palOpen() { return !pal.hidden; }
+  function openPal() {
+    pal.hidden = false;
+    palInput.value = '';
+    render();
+    palInput.focus();
+  }
+  function closePal() { pal.hidden = true; }
+
+  document.getElementById('cc-open').addEventListener('click', openPal);
+  pal.addEventListener('mousedown', function (e) { if (e.target === pal) closePal(); });
+  palInput.addEventListener('input', render);
+  palInput.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+    else if (e.key === 'Enter') { e.preventDefault(); choose(e.altKey ? 'pin' : (e.ctrlKey || e.metaKey) ? 'go' : 'copy'); }
+    else if (e.key === 'Escape') { e.preventDefault(); closePal(); }
+  });
+  document.getElementById('cc-kbd').textContent = mac ? 'cmd k' : 'ctrl k';
+  renderPins();
+
+  readOpen().forEach(function (id) {
+    var r = document.getElementById(id);
+    if (!r || !r.classList.contains('skill-row')) return;
+    r.classList.add('open');
+    var b = r.querySelector('.uses-toggle');
+    if (b) b.setAttribute('aria-expanded', 'true');
+  });
+
+  // #agent or #agent/sub deep links, then remembered tab, then the first one.
+  var hash = (location.hash || '').replace(/^#/, '').split('/');
+  var params = new URLSearchParams(location.search);
+  var start = hash[0] && document.getElementById('agent-' + hash[0]) ? hash[0] : (store.get('deck.agent') || tabs[0].dataset.agent);
+  selectAgent(start, false);
+  if (hash[1]) selectSub(currentAgent(), hash[1], false);
+  if (params.get('q')) { input.value = params.get('q'); applyFilter(); }
+  syncHash();
+})();
+</script>
+</body></html>
