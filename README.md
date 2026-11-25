@@ -70,7 +70,7 @@ Each entry in `data/sources.json` names an adapter:
 
 | Adapter | Reads |
 |---|---|
-| `skills-dir` | `skills/<name>/SKILL.md`, `agents/*.md`, optional `mcp.json`. Needs nothing else. |
+| `skills-dir` | `skills/<name>/SKILL.md`, `agents/*.md`, optional `mcp.json`. Needs nothing else. Groups come from `folders` rules in `sources.json`. |
 | `claude-config` | The above plus a curated `docs/skills.json` for grouping and effect levels. |
 | `codex-catalog` | `skill-deck/catalog.json`. |
 
@@ -81,12 +81,72 @@ command prefix lives in `sources.json`, so adapters stay generic.
 `borrowFrom` lets a thin config inherit a curated one's blurbs, effect levels
 and delegation trees wherever skill names match.
 
+Every adapter also reads structure a `SKILL.md` already spells out, so a raw
+sync is not flat:
+
+- Commands: a table whose first header cell is `Command`, or an
+  `argument-hint` that lists one-word choices (`audit | verify | ship`). Each
+  becomes a chip under the skill that copies the full line.
+- Macros: a command whose own section names other commands or skills ("Run
+  `polish`, `harden`, then `optimize`.") is drawn as a macro and carries its
+  steps.
+- Uses: other skills the body names in backticks. A hyphenated name counts on
+  sight. A bare word like `check` only counts written as `/check`, since a bare
+  word in backticks is usually prose. Curated uses win wherever there are any.
+
+`skills-dir` groups by `folders` rules on the entry, checked in order, names and
+prefixes before keywords. Anything unmatched lands in Other:
+
+```json
+"folders": [
+  { "folder": "Web/Frontend", "lead": "Building and polishing UI.", "names": ["polish-kit"], "prefixes": ["figma-"] },
+  { "folder": "Writing", "keywords": ["prose", "copy"] }
+]
+```
+
 ## Using it
 
-`Ctrl+K` searches every command in every tab and copies on Enter.
-`Ctrl+Enter` jumps to the row instead. `Alt+Enter` pins, and `Alt+1` through
-`Alt+9` copy a pinned command from anywhere on the page. `/` narrows the
-current view. The `uses` number opens the tree of what a command delegates to.
+Click any command to copy it. The `uses` number opens the tree of what it
+delegates to, three levels deep, and says when a skill it names is not
+installed for this agent and which tab has it.
+
+`Ctrl+K` searches every command in every tab. Matching is fuzzy, so `chk flk`
+finds `/check flaky`, and an empty palette opens on your recent and pinned
+commands.
+
+| Key | Does |
+|---|---|
+| `Enter` | Copy |
+| `Shift+Enter` | Add to the chain |
+| `Alt+Enter` | Pin. `Alt+1` through `Alt+9` copy a pin from anywhere |
+| `Ctrl+Enter` | Jump to the row |
+| `Tab` | Search one agent, then the next, then all |
+| `go` | List the tabs to jump to |
+| `/` | Narrow the current view |
+
+### Chains
+
+A chain is several skills or commands for one agent, rendered as one prompt.
+`Alt+click` a command to add it, or flip the click toggle to `chain` (the only
+way on a phone). Alt+clicking a macro adds all of its steps. Each addition puts
+the whole chain on the clipboard, so you can paste it straight into a session.
+
+With a command prefix the chain reads as commands the agent knows:
+
+```
+/polish-kit polish, then harden on src/app. Then /site-check ship. Same target throughout, one bounded pass per step in this order, one consolidated report at the end.
+```
+
+Without one it becomes a numbered instruction any agent can follow. The target
+field is added to every copy while it is set, chained or not. The chain, its
+target and your pins live in `localStorage`, so they stay with this browser.
+
+### Motion
+
+The header carries a particle ribbon in the theme accent, and the first visit
+in a session gets a short entrance. `fx off` in the header turns all of it off,
+and `prefers-reduced-motion` reduces it to short fades and a still ribbon. The
+ribbon draws at 30fps at most and stops while the tab is hidden.
 
 ## Keeping your deck out of the repo
 
@@ -105,6 +165,7 @@ node scripts/sync.mjs           # configs  -> data/
 node scripts/build.mjs          # data/    -> index.html
 node scripts/build.mjs --check  # non-zero if index.html is stale
 node scripts/watch.mjs          # rebuild on save
+node --test test/*.test.mjs     # the SKILL.md parser against test/fixture
 ```
 
 Both scripts fail loudly. The sync exits non-zero when it writes nothing,

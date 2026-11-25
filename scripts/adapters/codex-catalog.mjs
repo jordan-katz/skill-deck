@@ -2,10 +2,12 @@
 // connections and workflows. Groups come from each capability's category.
 import { join } from "node:path";
 import { readJson, readSkills, readAgents, slugId } from "./_shared.mjs";
+import { deriveExtras } from "./_commands.mjs";
 
 export async function build({ repoRoot }) {
   const cat = await readJson(join(repoRoot, "skill-deck", "catalog.json"));
   const fmBy = await readSkills(repoRoot);
+  const extras = deriveExtras(fmBy);
   const byId = new Map(cat.capabilities.map((c) => [c.id, c]));
 
   const byCategory = new Map();
@@ -26,6 +28,7 @@ export async function build({ repoRoot }) {
       mode: fm.mode || "auto",
       arg: fm.arg || "",
       onDisk: fmBy.has(c.id),
+      commands: extras.has(c.id) ? extras.get(c.id).commands : [],
       uses: (c.delegates || []).map((id) => ({
         kind: byId.has(id) ? (byId.get(id).kind === "skill" ? "skill" : "specialist") : "connection",
         name: id,

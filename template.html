@@ -161,7 +161,7 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
 .leaves { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .leaf { display: grid; grid-template-columns: 62px minmax(140px,190px) 1fr; gap: 0 12px; align-items: baseline; font-size: 13.5px; position: relative; }
 .leaf::before { content: ""; position: absolute; left: -16px; top: 0.75em; width: 10px; border-top: 2px solid var(--line); }
-.leaf .chip { font-size: 12.5px; }
+.leaf .chip { font-size: 12.5px; justify-self: start; }
 .leaf-kind { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .leaf-agent { color: var(--spawn); } .leaf-mcp { color: var(--auth); }
 .leaf-blurb { color: var(--muted); }
@@ -224,6 +224,135 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
 .age { display: block; color: var(--eff-build); }
 .empty { display: none; padding: 24px; color: var(--muted); text-align: center; }
 .empty.show { display: block; }
+/* ---- commands, macros and the uses tree ---- */
+.cmds { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 7px; }
+.cmd-group { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+.cg { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.chip.cmd-chip { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 4px; padding: 1px 7px; margin: 0; gap: 5px; }
+.chip.cmd-chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+.chip.cmd-chip.macro { color: var(--invoke); background: transparent; border: 1px dashed currentColor; }
+.chip.cmd-chip.macro::after { content: "\2192"; font-size: 10px; opacity: 0.7; }
+.in-chain { font-style: normal; font-size: 9.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 0 5px; line-height: 1.5; }
+.leaves.sub { margin: 4px 0 2px; padding-left: 14px; border-left: 2px solid var(--line); grid-column: 2 / -1; }
+.leaf > .leaves { grid-column: 2 / -1; }
+.leaf.ghost .leaf-blurb, .leaf.off .chip { opacity: 0.65; }
+.leaf-off { display: inline-block; margin-left: 6px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; color: var(--eff-build); }
+.dir-sep { color: var(--muted); opacity: 0.6; margin: 0 5px; font-weight: 500; }
+.blurb-toggle { all: unset; display: block; cursor: pointer; border-radius: 4px; }
+.blurb-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.blurb.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.blurb-toggle[aria-expanded="false"]:hover .blurb { color: var(--muted); }
+/* ---- click mode, fx switch ---- */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.seg button { font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: transparent; border: 0; padding: 4px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); }
+.seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.chain-mode .chip-copy[data-step]:hover { box-shadow: 0 0 0 1px var(--accent); }
+.chain-mode .chip-copy[data-step] .copy-hint::before { content: "+ chain"; }
+/* ---- chain tray ---- */
+.chain { position: fixed; right: 16px; bottom: 16px; z-index: 4; width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 32px); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.22); overflow: hidden; }
+.chain-head { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px 8px; border-bottom: 1px solid var(--line); }
+.chain-head b { font: 600 11px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.chain-agent { font: 500 11px "JetBrains Mono", ui-monospace, monospace; color: var(--muted); flex: 1; }
+.chain-x { font: 600 14px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+.chain-x:hover { color: var(--ink); }
+.chain-x:focus-visible { outline: 2px solid var(--focus); }
+.chain-steps { list-style: none; margin: 0; padding: 6px 8px; display: grid; gap: 3px; overflow-y: auto; max-height: 34vh; }
+.chain-steps li { display: grid; grid-template-columns: 20px 1fr auto auto; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; background: var(--ground); }
+.chain-steps li.cs-empty { display: block; background: none; color: var(--muted); font-size: 12.5px; padding: 6px; }
+.cs-n { font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; color: var(--accent); text-align: center; font-variant-numeric: tabular-nums; }
+.cs-t { font-size: 12px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.cs-up, .cs-x { font: 600 12px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 3px 5px; cursor: pointer; }
+.cs-up:hover, .cs-x:hover { color: var(--ink); border-color: var(--line); }
+.cs-up:disabled { opacity: 0.25; cursor: default; border-color: transparent; }
+.cs-up:focus-visible, .cs-x:focus-visible { outline: 2px solid var(--focus); }
+.chain-fields { display: grid; gap: 6px; padding: 8px 12px 0; }
+.chain-fields input { font: 12px "JetBrains Mono", ui-monospace, monospace; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); min-width: 0; }
+.chain-fields input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chain-preview { margin: 8px 12px 0; padding: 8px 10px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; font-size: 11.5px; line-height: 1.55; color: var(--ink); max-height: 18vh; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chain-preview.empty { color: var(--muted); }
+.chain-acts { display: flex; gap: 8px; padding: 10px 12px 12px; }
+.chain-acts button { font: 600 11px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.05em; text-transform: uppercase; padding: 6px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+.chain-acts .go { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); flex: 1; }
+.chain-acts button:hover { border-color: var(--accent); color: var(--ink); }
+.chain-acts .go:hover { color: var(--accent-ink); filter: brightness(1.08); }
+.chain-acts button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chain-acts .go.copied { background: var(--amber); border-color: var(--amber); }
+.has-chain .wrap { padding-bottom: 300px; }
+/* ---- palette additions ---- */
+.pal-top { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }
+.pal-top .pal-input { border-bottom: 0; }
+.pal-scopes { display: flex; gap: 4px; flex-wrap: wrap; padding: 0 12px 10px; }
+.pal-scopes button { font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--ground); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+.pal-scopes button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.pal-item { grid-template-columns: auto minmax(0,1fr) auto; }
+.pal-blurb { grid-column: 2 / -1; }
+.pal-k { font: 600 9.5px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; min-width: 46px; text-align: center; align-self: center; }
+.pal-k.k-macro { color: var(--invoke); border-color: currentColor; border-style: dashed; }
+.pal-k.k-cmd, .pal-k.k-skill { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
+.pal-k.k-recent { color: var(--amber); border-color: var(--amber-soft); background: var(--amber-soft); }
+.pal-k.k-page { color: var(--plugin); border-color: currentColor; }
+.toast.bad { background: var(--eff-external); color: #fff; }
+/* ---- motion ----
+   Decoration only. The fx switch and prefers-reduced-motion both turn it off,
+   and an entrance the browser never got frames for is finished by a guard in
+   deck.js, so nothing is left at its invisible first frame. */
+:root { --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.top { overflow: hidden; }
+.top > * { position: relative; z-index: 1; }
+.top > .band { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.75; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+:root[data-theme="light"] .top > .band { opacity: 0.5; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .top > .band { opacity: 0.5; } }
+.fx-off .top > .band { display: none; }
+.top h1 span { display: inline-block; white-space: pre; }
+.entering .agent-panel:not([hidden]) .sub-panel:not([hidden]) > .dir,
+.entering .agent-panel:not([hidden]) .sub-panel:not([hidden]) > .card,
+.entering .agent-panel:not([hidden]) .sub-panel:not([hidden]) > .rows { animation: rise 0.6s var(--ease-out) backwards; }
+.entering .sub-panel > :nth-child(2) { animation-delay: 50ms !important; }
+.entering .sub-panel > :nth-child(3) { animation-delay: 100ms !important; }
+.entering .sub-panel > :nth-child(4) { animation-delay: 150ms !important; }
+.entering .sub-panel > :nth-child(5) { animation-delay: 200ms !important; }
+.entering .sub-panel > :nth-child(6) { animation-delay: 250ms !important; }
+.entering .sub-panel > :nth-child(n+7) { animation-delay: 300ms !important; }
+.entering .tabs .tab { animation: rise 0.5s var(--ease-out) backwards; }
+.entering .tabs .tab:nth-child(2) { animation-delay: 60ms; }
+.entering .tabs .tab:nth-child(3) { animation-delay: 120ms; }
+.entering .tabs .tab:nth-child(n+4) { animation-delay: 180ms; }
+.sub-panel.swap-0 { animation: swap-a 240ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sub-panel.swap-1 { animation: swap-b 240ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dir[open] > .rows { animation: unfold 0.24s var(--ease-out); }
+.skill-row.open .tree { animation: unfold 0.24s var(--ease-out); }
+.in-chain { animation: pop 0.34s var(--ease-pop); }
+.chain:not([hidden]) { animation: tray-up 0.36s var(--ease-out); }
+.chain-steps li { animation: step-in 0.3s var(--ease-out) backwards; }
+.pal:not([hidden]) { animation: fade 0.2s ease; }
+.pal:not([hidden]) .pal-box { animation: pal-in 0.26s var(--ease-out); }
+.toast.show { animation: toast-in 0.36s var(--ease-out); }
+.chip-copy.copied { animation: copied 0.6s var(--ease-out); }
+.row.landed { animation: landed 1.4s ease-out; }
+.chip-copy, .pin, .tab, .subtab, .uses-toggle { transition: transform 160ms var(--ease-out), background-color 160ms, border-color 160ms, color 160ms; }
+.cmd-chip:hover, .pin:hover, .uses-toggle:hover { transform: translateY(-1px); }
+.skill-row:hover, .cmd-row:hover, .flat-row:hover { background: color-mix(in srgb, var(--accent-soft) 35%, transparent); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes swap-a { from { opacity: 0; transform: translateY(5px); } }
+@keyframes swap-b { from { opacity: 0; transform: translateY(5px); } }
+@keyframes unfold { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes pop { from { transform: scale(0.2); } }
+@keyframes step-in { from { opacity: 0; transform: translateX(-8px) scale(0.9); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes pal-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } }
+@keyframes tray-up { from { opacity: 0; transform: translateY(24px); } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px) scale(0.96); } }
+@keyframes copied { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 55%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
+@keyframes landed { 0%, 30% { background: var(--amber-soft); } }
+.fx-off *, .fx-off *::before, .fx-off *::after { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  /* Entrances become short fades: you still see what changed, nothing travels. */
+  .sub-panel.swap-0, .sub-panel.swap-1, .chain:not([hidden]), .pal:not([hidden]) .pal-box, .dir[open] > .rows, .skill-row.open .tree, .chain-steps li { animation: fade 0.18s ease both !important; }
+  .entering *, .in-chain, .chip-copy.copied, .toast.show { animation: none !important; }
+  .chip-copy, .pin, .tab, .subtab, .uses-toggle { transition: none; }
+  .cmd-chip:hover, .pin:hover, .uses-toggle:hover { transform: none; }
+}
 /* 860, not 760: the six-column row grid needs about 792px of track and gap, so
    between those two widths it overflowed its container. */
 @media (max-width: 860px) {
@@ -266,6 +395,10 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
   .pre-copy { opacity: 1; }
   .card table.links td:last-child { display: none; }
   .card td:first-child { font-size: 12px; }
+  .leaves.sub { grid-column: 1 / -1; }
+  .chain { right: 8px; left: 8px; bottom: 8px; width: auto; }
+  .chain-steps { max-height: 22vh; }
+  .seg button { padding: 6px 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .caret, .toast, .pre-copy { transition: none; } }
 </style>
@@ -273,10 +406,12 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
 <a class="skip" href="#main">Skip to content</a>
 <div class="wrap">
   <header class="top">
+    <canvas class="band" id="band" aria-hidden="true"></canvas>
     <div class="top-row">
       <h1><span>__DECK_NAME__</span> __DECK_SUFFIX__</h1>
       <button class="cc-open" id="cc-open" type="button" aria-haspopup="dialog">copy anything<kbd class="kbd" id="cc-kbd">ctrl k</kbd></button>
       <div class="cc-pins swipe" id="pins" role="group" aria-label="Pinned commands"></div>
+      <button class="theme" id="fx" type="button" aria-pressed="true" title="Animations and the particle band">fx on</button>
       <button class="theme" id="theme" type="button" aria-label="Color theme">system</button>
     </div>
     <div class="tabs swipe" role="tablist" aria-label="Agent">__DECK_TABS__</div>
@@ -288,6 +423,7 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
     </div>
     <div class="effect-bar swipe" id="effects" role="group" aria-label="Filter by effect">__DECK_EFFECTS__</div>
     <div class="controls-end">
+      <div class="seg" id="click-mode" role="group" aria-label="What a click on a command does"><button type="button" data-mode="copy" aria-pressed="true">copy</button><button type="button" data-mode="chain" aria-pressed="false">chain</button></div>
       <button class="linkish" data-expand type="button">expand all</button>
       <span class="sep" aria-hidden="true">/</span>
       <button class="linkish" data-collapse type="button">collapse</button>
@@ -299,15 +435,29 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
     <span><span class="badge badge-auto">auto</span>The agent can pick it up on its own when the request matches.</span>
     <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
     <span><code class="arg">[arg]</code> What to put after the command.</span>
-    <span>Click a command to copy it. The <b>uses</b> number opens the tree of what it delegates to.</span>
+    <span><code class="chip cmd-chip" style="cursor:default">cmd</code> A command the skill takes. <code class="chip cmd-chip macro" style="cursor:default">macro</code> A command that runs several in order.</span>
+    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to a chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
   </div>
   <p class="foot" data-built="__DECK_BUILT__">__DECK_FOOT__<span class="age" id="age"></span></p>
 </div>
+<aside class="chain" id="chain" aria-label="Chain" hidden>
+  <div class="chain-head"><b>chain</b><span class="chain-agent" id="chain-agent"></span><button class="chain-x" id="chain-close" type="button" aria-label="Close the chain">&times;</button></div>
+  <ol class="chain-steps" id="chain-steps"></ol>
+  <div class="chain-fields">
+    <input id="chain-target" type="text" autocomplete="off" spellcheck="false" placeholder="target: file, route or URL" aria-label="Target, added to every copy">
+    <input id="chain-notes" type="text" autocomplete="off" placeholder="notes for the run" aria-label="Notes for the run">
+  </div>
+  <code class="chain-preview" id="chain-preview" aria-live="polite"></code>
+  <div class="chain-acts"><button class="go" id="chain-copy" type="button">copy chain</button><button id="chain-clear" type="button">clear</button></div>
+</aside>
 <div class="pal" id="pal" hidden>
   <div class="pal-box" role="dialog" aria-modal="true" aria-label="Copy anything">
-    <input class="pal-input" id="pal-input" type="text" autocomplete="off" spellcheck="false" placeholder="copy anything from any tab" aria-label="Search every command">
+    <div class="pal-top">
+      <input class="pal-input" id="pal-input" type="text" autocomplete="off" spellcheck="false" placeholder="command, skill or tab" role="combobox" aria-expanded="true" aria-controls="pal-list" aria-autocomplete="list" aria-label="Search every command">
+      <div class="pal-scopes" id="pal-scopes" role="group" aria-label="Search in"></div>
+    </div>
     <ul class="pal-list" id="pal-list" role="listbox" aria-label="Results"></ul>
-    <div class="pal-foot"><span><kbd class="kbd">enter</kbd> copy</span><span><kbd class="kbd">alt enter</kbd> pin</span><span><kbd class="kbd">ctrl enter</kbd> go to it</span><span><kbd class="kbd">esc</kbd> close</span></div>
+    <div class="pal-foot"><span><kbd class="kbd">enter</kbd> copy</span><span><kbd class="kbd">shift enter</kbd> add to chain</span><span><kbd class="kbd"><span data-alt>alt</span> enter</kbd> pin</span><span><kbd class="kbd">ctrl enter</kbd> go to it</span><span><kbd class="kbd">tab</kbd> agent</span><span><kbd class="kbd">go</kbd> tabs</span></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

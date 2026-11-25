@@ -9,6 +9,7 @@
 // and group placement from an already-built deck wherever skill names match.
 // Ungrouped skills land under "Other".
 import { readSkills, readAgents, readMcpJson, slugId } from "./_shared.mjs";
+import { deriveExtras, folderFor } from "./_commands.mjs";
 
 function indexPayload(payload) {
   const by = new Map();
@@ -18,15 +19,24 @@ function indexPayload(payload) {
   return by;
 }
 
-export async function build({ repoRoot, borrowed }) {
+export async function build({ repoRoot, borrowed, entry = {} }) {
   const fmBy = await readSkills(repoRoot);
+  const extras = deriveExtras(fmBy);
   const borrow = indexPayload(borrowed);
+  const rules = Array.isArray(entry.folders) ? entry.folders : [];
   const groups = new Map();
+  const blurbOf = (n) => (borrow.get(n) ? borrow.get(n).skill.blurb : (fmBy.get(n) || {}).description || "");
 
   for (const [name, fm] of fmBy) {
     const b = borrow.get(name);
-    const title = b ? b.title : "Other";
-    if (!groups.has(title)) groups.set(title, { id: slugId(title), title, lead: b ? b.lead : "", skills: [] });
+    const x = extras.get(name);
+    const rule = rules.find((r) => r.folder === folderFor(name, fm.description, rules));
+    const title = b ? b.title : rule ? rule.folder : "Other";
+    if (!groups.has(title)) groups.set(title, { id: slugId(title), title, lead: b ? b.lead : rule ? rule.lead || "" : "", skills: [] });
+    // Curated uses win where there are any, kept only where this config has the
+    // skill on disk; otherwise the skills its own SKILL.md names.
+    const curated = b ? (b.skill.uses || []).filter((u) => fmBy.has(u.name)) : [];
+    const found = x.uses.map((n) => ({ kind: "skill", name: n, blurb: blurbOf(n) }));
     groups.get(title).skills.push({
       name,
       blurb: b ? b.skill.blurb : fm.description,
@@ -35,14 +45,18 @@ export async function build({ repoRoot, borrowed }) {
       mode: fm.mode,
       arg: fm.arg,
       onDisk: true,
-      // Only keep delegations to skills this config actually has on disk.
-      uses: b ? (b.skill.uses || []).filter((u) => fmBy.has(u.name)) : [],
+      commands: x.commands,
+      uses: curated.length ? curated : found,
       usesNote: b ? b.skill.usesNote || "" : ""
     });
   }
 
+  // Groups follow the order of the folder rules, then the rest alphabetically, with Other last.
+  const order = rules.map((r) => r.folder);
+  const rank = (t) => (t === "Other" ? 2 : order.includes(t) ? 0 : 1);
   return {
-    groups: [...groups.values()].sort((a, b) => a.title.localeCompare(b.title)),
+    groups: [...groups.values()].sort((a, b) =>
+      rank(a.title) - rank(b.title) || (order.indexOf(a.title) - order.indexOf(b.title)) || a.title.localeCompare(b.title)),
     agents: await readAgents(repoRoot),
     mcps: await readMcpJson(repoRoot),
     plugins: []

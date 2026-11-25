@@ -19,14 +19,29 @@ export function frontmatter(text) {
   if (!m) return {};
   const fm = {};
   let key = null;
-  for (const raw of m[1].split(/\r?\n/)) {
+  const lines = m[1].split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
     const kv = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(raw);
-    if (kv) { key = kv[1]; fm[key] = kv[2].trim(); continue; }
+    if (kv) {
+      key = kv[1];
+      let v = kv[2].trim();
+      // A folded or literal block (description: >) carries on in the indented lines below it.
+      if (/^[>|][-+]?$/.test(v)) {
+        const block = [];
+        while (i + 1 < lines.length && (/^\s+\S/.test(lines[i + 1]) || !lines[i + 1].trim())) block.push(lines[++i].trim());
+        v = block.filter(Boolean).join(" ");
+      }
+      fm[key] = v;
+      continue;
+    }
     const item = /^\s*-\s+(.*)$/.exec(raw);
     if (item && key) { if (!Array.isArray(fm[key])) fm[key] = []; fm[key].push(item[1].trim()); }
   }
   return fm;
 }
+
+export const body = (text) => String(text || "").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
 
 export async function dirsIn(p) {
   if (!(await exists(p))) return [];
@@ -46,13 +61,15 @@ export async function readSkills(repoRoot) {
   for (const name of await dirsIn(join(repoRoot, "skills"))) {
     const file = join(repoRoot, "skills", name, "SKILL.md");
     if (!(await exists(file))) continue;
-    const fm = frontmatter(await readFile(file, "utf8"));
+    const text = await readFile(file, "utf8");
+    const fm = frontmatter(text);
     out.set(name, {
       name,
       arg: unquote(fm["argument-hint"]),
       mode: fm["disable-model-invocation"] === "true" ? "invoke" : "auto",
       description: unquote(fm.description),
-      path: `skills/${name}/SKILL.md`
+      path: `skills/${name}/SKILL.md`,
+      text
     });
   }
   return out;

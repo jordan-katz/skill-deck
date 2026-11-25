@@ -73,7 +73,26 @@
               "blurb": "Reads a diff against the stated intent and argues with it."
             }
           ],
-          "usesNote": "Calls check after each unit of work rather than once at the end."
+          "usesNote": "Calls check after each unit of work rather than once at the end.",
+          "commands": [
+            {
+              "cmd": "ship",
+              "group": "",
+              "desc": "Survey, build, then run the changed tests.",
+              "steps": [
+                {
+                  "skill": "survey"
+                },
+                {
+                  "skill": "implement"
+                },
+                {
+                  "skill": "check",
+                  "cmd": "changed"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "check",
@@ -84,7 +103,24 @@
           "arg": "[suite or path]",
           "onDisk": true,
           "uses": [],
-          "usesNote": ""
+          "usesNote": "",
+          "commands": [
+            {
+              "cmd": "suite",
+              "group": "",
+              "desc": "Run every test and report the failures."
+            },
+            {
+              "cmd": "changed",
+              "group": "",
+              "desc": "Run only the tests that touch files changed on this branch."
+            },
+            {
+              "cmd": "flaky",
+              "group": "",
+              "desc": "Rerun the failures a few times and say which ones are flaky."
+            }
+          ]
         }
       ]
     },
@@ -119,7 +155,34 @@
           "arg": "[file or paste]",
           "onDisk": true,
           "uses": [],
-          "usesNote": ""
+          "usesNote": "",
+          "commands": [
+            {
+              "cmd": "cut",
+              "group": "Pass",
+              "desc": "Cut padding and repeated points."
+            },
+            {
+              "cmd": "plain",
+              "group": "Pass",
+              "desc": "Swap jargon for plain words."
+            },
+            {
+              "cmd": "final",
+              "group": "Macro",
+              "desc": "Both passes, in order.",
+              "steps": [
+                {
+                  "skill": "tighten",
+                  "cmd": "cut"
+                },
+                {
+                  "skill": "tighten",
+                  "cmd": "plain"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "publish",

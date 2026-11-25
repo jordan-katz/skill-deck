@@ -3,10 +3,12 @@
 // the SKILL.md frontmatter supplies the argument hint and invocation mode.
 import { join } from "node:path";
 import { readJson, readSkills, readAgents } from "./_shared.mjs";
+import { deriveExtras } from "./_commands.mjs";
 
 export async function build({ repoRoot }) {
   const deck = await readJson(join(repoRoot, "docs", "skills.json"));
   const fmBy = await readSkills(repoRoot);
+  const extras = deriveExtras(fmBy);
 
   const groups = deck.groups.map((g) => ({
     id: g.id,
@@ -28,6 +30,7 @@ export async function build({ repoRoot }) {
         mode: fm.mode || "auto",
         arg: fm.arg || "",
         onDisk: fmBy.has(name),
+        commands: extras.has(name) ? extras.get(name).commands : [],
         uses,
         usesNote: deck.useNotes[name] || ""
       };

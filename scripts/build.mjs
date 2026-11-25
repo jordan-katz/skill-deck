@@ -93,6 +93,10 @@ for (const [id, payload] of Object.entries(agents)) {
       if (seen.has(key)) problems.push(`${id}: duplicate skill ${key}`);
       seen.add(key);
       if (s.effect && !EFFECTS[s.effect]) problems.push(`${id}/${s.name}: unknown effect "${s.effect}"`);
+      for (const c of s.commands || []) {
+        if (!c || !/^[a-z][\w-]*$/.test(c.cmd || "")) problems.push(`${id}/${s.name}: a command needs a one-word "cmd"`);
+        for (const st of (c && c.steps) || []) if (!st.skill) problems.push(`${id}/${s.name} ${c.cmd}: a macro step has no skill`);
+      }
     }
   }
   for (const c of payload.cards || []) {
@@ -112,6 +116,20 @@ if (problems.length) {
 }
 
 // ---- renderers ----------------------------------------------------------
+// Which tabs carry each skill, so a uses tree can say "not installed here (in
+// codex)" instead of listing a name that will do nothing when typed.
+const skillHome = new Map();
+for (const [id, payload] of Object.entries(agents)) {
+  for (const g of payload.groups || []) for (const s of g.skills || []) {
+    if (!skillHome.has(s.name)) skillHome.set(s.name, []);
+    if (!skillHome.get(s.name).includes(payload.name || id)) skillHome.get(s.name).push(payload.name || id);
+  }
+}
+
+// Steps written short: "polish, harden" rather than repeating the skill.
+const shortSteps = (steps) => steps.map((st, i) =>
+  st.cmd && steps[i - 1] && steps[i - 1].skill === st.skill ? st.cmd : st.cmd ? `${st.skill} ${st.cmd}` : st.skill);
+
 // The toggle sits in the uses cell; the tree is a sibling of the cells so that
 // its `grid-column: 1 / -1` resolves against the row. Nested inside the cell it
 // would lay out in the 52px last track and wrap to a sliver.
@@ -121,16 +139,67 @@ function renderUsesToggle(skill) {
   return `<button class="uses-toggle" type="button" aria-expanded="false">${uses.length}</button>`;
 }
 
-function renderUsesTree(skill) {
-  const uses = skill.uses || [];
-  if (!uses.length) return "";
-  const leaves = uses.map((u) => `<li class="leaf"><span class="leaf-kind leaf-${esc(u.kind)}">${esc(u.kind)}</span>` +
-    `<code class="chip chip-static">${esc(u.name)}</code>` +
-    `<span class="leaf-blurb">${esc(u.blurb)}</span></li>`).join("");
-  return `<div class="tree">${skill.usesNote ? `<p class="tree-note">${esc(skill.usesNote)}</p>` : ""}<ul class="leaves">${leaves}</ul></div>`;
+// A skill leaf opens into that skill's own uses, three levels at most, so the
+// tree shows the whole blast radius. A name already on the path above stops
+// the walk rather than looping.
+function renderLeaves(uses, ctx, trail, depth) {
+  return `<ul class="leaves${depth ? " sub" : ""}">` + uses.map((u) => {
+    const head = `<span class="leaf-kind leaf-${esc(u.kind)}">${esc(u.kind)}</span>`;
+    if (u.kind === "skill" && trail.includes(u.name)) {
+      return `<li class="leaf ghost">${head}<code class="chip chip-static">${esc(u.name)}</code><span class="leaf-blurb">\u21BA already open above</span></li>`;
+    }
+    const child = u.kind === "skill" ? ctx.byName.get(u.name) : null;
+    let note = "";
+    if (u.kind === "skill" && !child) {
+      const homes = (skillHome.get(u.name) || []).filter((n) => n !== ctx.agentName);
+      note = `<span class="leaf-off">not installed here${homes.length ? ` (in ${esc(homes.join(", "))})` : ""}</span>`;
+    }
+    const name = child
+      ? `<code class="chip chip-copy" role="button" tabindex="0" data-copy="${esc(ctx.prefix + u.name)}" data-step="${esc(u.name)}" data-blurb="${esc(u.blurb || child.blurb)}" title="Copy ${esc(ctx.prefix + u.name)}">${esc(u.name)}<span class="copy-hint" aria-hidden="true"></span></code>`
+      : `<code class="chip chip-static">${esc(u.name)}</code>`;
+    const deeper = child && depth < 2 && (child.uses || []).length ? renderLeaves(child.uses, ctx, trail.concat(u.name), depth + 1) : "";
+    return `<li class="leaf${note ? " off" : ""}">${head}${name}<span class="leaf-blurb">${esc(u.blurb)}${note}</span>${deeper}</li>`;
+  }).join("") + `</ul>`;
 }
 
-function renderSkillRow(skill, prefix, groupTitle, agentId, groupId) {
+function renderUsesTree(skill, ctx) {
+  const uses = skill.uses || [];
+  if (!uses.length) return "";
+  return `<div class="tree">${skill.usesNote ? `<p class="tree-note">${esc(skill.usesNote)}</p>` : ""}${renderLeaves(uses, ctx, [skill.name], 0)}</div>`;
+}
+
+// Commands a skill takes, grouped the way its SKILL.md groups them. Each chip
+// copies the full line and carries the step it would add to a chain. A macro
+// chip carries its steps too, so Alt+click loads the whole sequence.
+function renderCommands(skill, prefix) {
+  const cmds = skill.commands || [];
+  if (!cmds.length) return "";
+  const groups = new Map();
+  for (const c of cmds) {
+    const g = c.group || "";
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(c);
+  }
+  const chip = (c) => {
+    const line = `${prefix}${skill.name} ${c.cmd}`;
+    const steps = c.steps && c.steps.length ? shortSteps(c.steps).join(" \u2192 ") : "";
+    const tip = [c.desc, steps && `= ${steps}`].filter(Boolean).join(" ");
+    return `<code class="chip chip-copy cmd-chip${steps ? " macro" : ""}" role="button" tabindex="0" data-copy="${esc(line)}" data-step="${esc(skill.name)}" data-cmd="${esc(c.cmd)}"` +
+      `${steps ? ` data-steps="${esc(JSON.stringify(c.steps))}"` : ""} data-blurb="${esc(tip)}" title="${esc(tip || line)}">${esc(c.cmd)}</code>`;
+  };
+  return `<span class="cmds">` + [...groups].map(([g, list]) =>
+    `<span class="cmd-group">${g ? `<span class="cg">${esc(g)}</span>` : ""}${list.map(chip).join("")}</span>`).join("") + `</span>`;
+}
+
+// Raw SKILL.md descriptions run long. Past a few lines the blurb is clamped,
+// and the text itself is the button that opens it.
+const CLAMP = 240;
+function renderBlurb(text) {
+  if (!text || text.length <= CLAMP) return esc(text);
+  return `<button type="button" class="blurb-toggle" aria-expanded="false" title="Show all"><span class="blurb clamp">${esc(text)}</span></button>`;
+}
+
+function renderSkillRow(skill, prefix, groupTitle, agentId, groupId, ctx) {
   const cmd = prefix + skill.name;
   const id = rowId(agentId, groupId, skill.name);
   const eff = skill.effect || "build";
@@ -138,25 +207,29 @@ function renderSkillRow(skill, prefix, groupTitle, agentId, groupId) {
     ? { kind: "invoke", text: "slash only" }
     : { kind: "auto", text: "auto" };
   const kidText = (skill.uses || []).map((u) => u.name + " " + u.blurb).join(" ");
-  return `<li class="row skill-row eff-${esc(eff)}" id="${id}" data-effect="${esc(eff)}" data-search="${search(cmd, skill.blurb, skill.arg, mode.text, eff, skill.effectNote, kidText, groupTitle, skill.useWhen, skill.avoidWhen)}">
-  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="${esc(cmd)}" title="Copy ${esc(cmd)}">${esc(cmd)}<span class="copy-hint" aria-hidden="true"></span></code></div>
-  <div class="cell cell-blurb">${esc(skill.blurb)}${skill.effectNote ? `<span class="eff-note">${esc(skill.effectNote)}</span>` : ""}</div>
+  const cmdText = (skill.commands || []).map((c) => c.cmd + " " + (c.desc || "")).join(" ");
+  return `<li class="row skill-row eff-${esc(eff)}" id="${id}" data-effect="${esc(eff)}" data-search="${search(cmd, skill.blurb, skill.arg, mode.text, eff, skill.effectNote, kidText, cmdText, groupTitle, skill.useWhen, skill.avoidWhen)}">
+  <div class="cell cell-cmd"><code class="chip chip-copy" role="button" tabindex="0" data-copy="${esc(cmd)}" data-step="${esc(skill.name)}" title="Copy ${esc(cmd)}">${esc(cmd)}<span class="copy-hint" aria-hidden="true"></span></code></div>
+  <div class="cell cell-blurb">${renderBlurb(skill.blurb)}${skill.effectNote ? `<span class="eff-note">${esc(skill.effectNote)}</span>` : ""}${renderCommands(skill, prefix)}</div>
   <div class="cell cell-effect"><span class="eff eff-${esc(eff)}">${esc(eff)}</span></div>
   <div class="cell cell-mode"><span class="badge badge-${mode.kind}">${esc(mode.text)}</span></div>
   <div class="cell cell-arg">${skill.arg ? `<code class="arg">${esc(skill.arg)}</code>` : '<span class="dash">none</span>'}</div>
   <div class="cell cell-uses">${renderUsesToggle(skill)}</div>
-  ${renderUsesTree(skill)}
+  ${renderUsesTree(skill, ctx)}
 </li>`;
 }
 
 function renderSkillsPanel(payload) {
   const prefix = payload.commandPrefix || "/";
+  const byName = new Map();
+  for (const g of payload.groups) for (const s of g.skills) if (!byName.has(s.name)) byName.set(s.name, s);
+  const ctx = { byName, prefix, agentName: payload.name || payload.id };
   const dirs = payload.groups.map((g) => {
-    const rows = g.skills.map((s) => renderSkillRow(s, prefix, g.title, payload.id, g.id)).join("\n");
+    const rows = g.skills.map((s) => renderSkillRow(s, prefix, g.title, payload.id, g.id, ctx)).join("\n");
     return `<details class="dir" id="dir-${esc(payload.id)}-${esc(g.id)}" data-dir="${esc(payload.id)}-${esc(g.id)}">
   <summary class="dir-head">
     <span class="caret" aria-hidden="true"></span>
-    <span class="dir-title">${esc(g.title)}</span>
+    <span class="dir-title">${String(g.title).split("/").map(esc).join('<span class="dir-sep">/</span>')}</span>
     <span class="dir-lead">${esc(g.lead)}</span>
     <span class="count" data-count data-total="${g.skills.length}">${g.skills.length}</span>
   </summary>
@@ -323,7 +396,7 @@ for (const id of AGENT_ORDER) {
   if (payload.repo) meta.push(`<span>${esc(payload.repo)}</span>`);
   if (payload.syncedAt) meta.push(`<span>synced ${esc(payload.syncedAt)}</span>`);
 
-  bodyHtml.push(`<section class="agent-panel" id="agent-${esc(id)}" data-agent="${esc(id)}" role="tabpanel" aria-labelledby="tab-${esc(id)}" hidden>
+  bodyHtml.push(`<section class="agent-panel" id="agent-${esc(id)}" data-agent="${esc(id)}" data-prefix="${esc(payload.commandPrefix == null ? "/" : payload.commandPrefix)}" role="tabpanel" aria-labelledby="tab-${esc(id)}" hidden>
   <div class="agent-meta swipe">${meta.join("")}</div>
   <div class="subtabs swipe" role="tablist" aria-label="${esc(payload.name)} sections">${subs.map((s) =>
     `<button class="subtab" role="tab" data-sub="${esc(s.id)}" aria-selected="false" aria-controls="panel-${esc(id)}-${esc(s.id)}">${esc(s.label)}<span class="n">${s.n}</span></button>`).join("")}</div>

@@ -7,7 +7,7 @@
 
   "_adapters": "skills-dir works for any config with skills/<name>/SKILL.md, agents/*.md and an optional mcp.json, and needs no code. claude-config also reads a curated docs/skills.json. codex-catalog reads skill-deck/catalog.json. Write your own in scripts/adapters/ if your layout differs.",
 
-  "_fields": "path may be relative to this repo, absolute, or start with ~ for your home directory. adapter names a module in scripts/adapters/. borrowFrom is optional and lifts curated blurbs from another entry where skill names match. Everything else is identity: it is copied onto the payload, so adapters never hardcode your setup.",
+  "_fields": "path may be relative to this repo, absolute, or start with ~ for your home directory. adapter names a module in scripts/adapters/. borrowFrom is optional and lifts curated blurbs from another entry where skill names match. folders is optional and groups a skills-dir config: [{ \"folder\": \"Web/Frontend\", \"lead\": \"...\", \"names\": [], \"prefixes\": [], \"keywords\": [] }]. Everything else is identity: it is copied onto the payload, so adapters never hardcode your setup.",
 
   "_example": {
     "adapter": "skills-dir",

@@ -21,7 +21,8 @@ this checkout. Report what you found and let them cut the list.
 
 - `skills-dir` reads `skills/<name>/SKILL.md`, `agents/*.md` and an optional
   `mcp.json`. It needs nothing else, so it is the right answer unless the
-  config has a curated catalog.
+  config has a curated catalog. Give its entry `folders` rules so skills land
+  in real groups instead of one long Other.
 - `claude-config` also reads a hand-maintained `docs/skills.json` for grouping,
   effect levels and the delegation graph.
 - `codex-catalog` reads `skill-deck/catalog.json`.
@@ -88,8 +89,16 @@ judgment about blast radius that nothing can infer, and a deck that says
 the level alone would mislead: what it writes, what it stops before doing.
 
 **Fill the delegation tree.** `uses` is what makes the deck worth opening,
-because it shows the blast radius before the run. Read each skill for what it
-actually calls. Add a `usesNote` when the shape needs a sentence.
+because it shows the blast radius before the run. The sync already fills it
+from skill names a `SKILL.md` writes in backticks, so check what it found
+rather than starting from nothing: drop a name that was only mentioned in
+passing, and add what a skill calls without naming. Add a `usesNote` when the
+shape needs a sentence.
+
+**Check the commands.** Command chips and macros come from a skill's
+`Command` table or a one-word `argument-hint` list. If a skill takes commands
+and shows none, its `SKILL.md` lists them some other way; a `Command` table is
+the cheapest fix and helps the agent too.
 
 If they run more than one agent and the skill names overlap, set `borrowFrom`
 on the thinner one so it inherits the curated blurbs rather than being written
@@ -98,6 +107,7 @@ twice. Borrowers build after the config they borrow from.
 ## 5. Check it before handing it over
 
 - `node scripts/build.mjs --check` exits non-zero when `index.html` is stale.
+- `node --test test/*.test.mjs` runs the `SKILL.md` parser against fixtures.
 - The sync exits non-zero when it writes nothing, which is what catches a path
   that no longer resolves.
 - Open `index.html` and read the first screen. If any blurb still reads like
