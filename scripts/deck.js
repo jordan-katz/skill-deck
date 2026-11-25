@@ -479,6 +479,14 @@
   function activate(c, e) {
     var panel = c.closest('.agent-panel');
     if (c.dataset.step && panel && (chainMode || e.altKey)) { addSteps(panel.dataset.agent, stepsOf(c)); return; }
+    // Built-in CLI commands act on the session itself, and a CLI only reads the
+    // command at the start of a prompt, so they copy on their own.
+    if (chainMode || e.altKey) {
+      var line = c.getAttribute('data-copy');
+      toClipboard(line, function () { flash(c, line); say("Built-in commands can't join a chain. Copied " + line + ' on its own.'); },
+        function () { say('The clipboard was not reachable here. Select and copy it by hand.', true); });
+      return;
+    }
     var t = withTarget(c, c.getAttribute('data-copy'));
     copy(c, t, t);
   }
@@ -776,7 +784,7 @@
     if (how === 'pin') { togglePin(it.key); render(); return; }
     if (how === 'go') { remember(it.key); closePal(false); goTo(it.agent, it.sub, it.rowId); return; }
     if (how === 'chain') {
-      if (!it.el.dataset.step) { say('Only skills and their commands can join a chain.', true); return; }
+      if (!it.el.dataset.step) { say("Built-in commands can't join a chain. Pick a skill or one of its commands.", true); return; }
       remember(it.key);
       addSteps(it.agent, stepsOf(it.el));
       palInput.value = '';
@@ -843,6 +851,7 @@
   });
   document.getElementById('cc-kbd').textContent = mac ? 'cmd k' : 'ctrl k';
   qs('[data-alt]').forEach(function (k) { k.textContent = mac ? 'opt' : 'alt'; });
+  qs('[data-mod]').forEach(function (k) { k.textContent = mac ? 'cmd' : 'ctrl'; });
   renderPins();
 
   readOpen().forEach(function (id) {

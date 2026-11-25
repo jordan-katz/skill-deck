@@ -217,8 +217,16 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
 .note b { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); display: block; margin-bottom: 4px; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%,12px); background: var(--ink); color: var(--ground); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; padding: 8px 14px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity 140ms, transform 140ms; z-index: 3; max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translate(-50%,0); }
-.legend { margin-top: 28px; color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
-.legend .badge { margin-right: 4px; }
+/* The legend reads as four short lists, each a key column and a meaning column. */
+.legend { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px 28px; align-items: start; }
+.lg-h { margin: 0 0 8px; font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lg-list { margin: 0; display: grid; gap: 7px; }
+.lg-row { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: baseline; }
+.lg-row dt { margin: 0; justify-self: start; }
+.lg-row dd { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.lg-row .kbd { font-size: 9.5px; }
+.lg-sample { pointer-events: none; cursor: default; }
+.lg-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; opacity: 0.85; }
 .foot { margin-top: 20px; color: var(--muted); font-size: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; line-height: 1.7; }
 .foot .chip { font-size: 11.5px; font-weight: 500; }
 .age { display: block; color: var(--eff-build); }
@@ -739,17 +747,43 @@ node scripts/build.mjs</code></pre></div>
   </div>
 </section></main>
   <p class="empty" id="empty">Nothing matches that filter.</p>
-  <div class="legend">
-    <span><span class="eff eff-inspect">inspect</span> Reads and reports. Nothing changes.</span>
-    <span><span class="eff eff-draft">draft</span> Produces text, a plan, or a doc. No code changes.</span>
-    <span><span class="eff eff-build">build</span> Edits code and files in the repo.</span>
-    <span><span class="eff eff-external">external</span> Changes something outside the repo.</span>
-    <span><span class="badge badge-auto">auto</span>The agent can pick it up on its own when the request matches.</span>
-    <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
-    <span><code class="arg">[arg]</code> What to put after the command.</span>
-    <span><code class="chip cmd-chip" style="cursor:default">cmd</code> A command the skill takes. <code class="chip cmd-chip macro" style="cursor:default">macro</code> A command that runs several in order.</span>
-    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to the chain and copies the whole chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
-  </div>
+  <section class="legend" aria-label="How to read this deck">
+    <div class="lg-group">
+      <h2 class="lg-h">Effect</h2>
+      <dl class="lg-list">
+        <div class="lg-row"><dt><span class="eff eff-inspect">inspect</span></dt><dd>Reads and reports. Nothing changes.</dd></div>
+        <div class="lg-row"><dt><span class="eff eff-draft">draft</span></dt><dd>Produces text, a plan, or a doc. No code changes.</dd></div>
+        <div class="lg-row"><dt><span class="eff eff-build">build</span></dt><dd>Edits code and files in the repo.</dd></div>
+        <div class="lg-row"><dt><span class="eff eff-external">external</span></dt><dd>Changes something outside the repo.</dd></div>
+      </dl>
+    </div>
+    <div class="lg-group">
+      <h2 class="lg-h">Runs</h2>
+      <dl class="lg-list">
+        <div class="lg-row"><dt><span class="badge badge-auto">auto</span></dt><dd>The agent picks it up on its own when a request matches.</dd></div>
+        <div class="lg-row"><dt><span class="badge badge-invoke">slash only</span></dt><dd>Runs only when you type it.</dd></div>
+      </dl>
+    </div>
+    <div class="lg-group">
+      <h2 class="lg-h">On a skill</h2>
+      <dl class="lg-list">
+        <div class="lg-row"><dt><code class="arg">[arg]</code></dt><dd>What to type after it.</dd></div>
+        <div class="lg-row"><dt><code class="chip cmd-chip lg-sample">cmd</code></dt><dd>A command it takes.</dd></div>
+        <div class="lg-row"><dt><code class="chip cmd-chip macro lg-sample">macro</code></dt><dd>A command that runs several in order.</dd></div>
+        <div class="lg-row"><dt><span class="uses-toggle lg-sample">3</span></dt><dd>Opens what it delegates to.</dd></div>
+      </dl>
+    </div>
+    <div class="lg-group">
+      <h2 class="lg-h">Keys</h2>
+      <dl class="lg-list">
+        <div class="lg-row"><dt><kbd class="kbd">click</kbd></dt><dd>Copy the command.</dd></div>
+        <div class="lg-row"><dt><kbd class="kbd"><span data-alt>alt</span> click</kbd></dt><dd>Add it to the chain and copy the whole chain.</dd></div>
+        <div class="lg-row"><dt><kbd class="kbd"><span data-mod>ctrl</span> k</kbd></dt><dd>Search every tab.</dd></div>
+        <div class="lg-row"><dt><kbd class="kbd">/</kbd></dt><dd>Narrow this view.</dd></div>
+      </dl>
+      <p class="lg-note">A chain holds one agent's skills and their commands. Built-in CLI commands copy on their own.</p>
+    </div>
+  </section>
   <p class="foot" data-built="2026-11-25">Built 2026-11-25 from data/. claude-code 10 · example 3. Refresh from the config repos with <code class="chip chip-copy" role="button" tabindex="0" data-copy="node scripts/sync.mjs &amp;&amp; node scripts/build.mjs" title="Copy the rebuild command">node scripts/sync.mjs &amp;&amp; node scripts/build.mjs<span class="copy-hint" aria-hidden="true"></span></code><span class="age" id="age"></span></p>
 </div>
 <aside class="chain" id="chain" aria-label="Chain" hidden>
@@ -1254,6 +1288,14 @@ node scripts/build.mjs</code></pre></div>
   function activate(c, e) {
     var panel = c.closest('.agent-panel');
     if (c.dataset.step && panel && (chainMode || e.altKey)) { addSteps(panel.dataset.agent, stepsOf(c)); return; }
+    // Built-in CLI commands act on the session itself, and a CLI only reads the
+    // command at the start of a prompt, so they copy on their own.
+    if (chainMode || e.altKey) {
+      var line = c.getAttribute('data-copy');
+      toClipboard(line, function () { flash(c, line); say("Built-in commands can't join a chain. Copied " + line + ' on its own.'); },
+        function () { say('The clipboard was not reachable here. Select and copy it by hand.', true); });
+      return;
+    }
     var t = withTarget(c, c.getAttribute('data-copy'));
     copy(c, t, t);
   }
@@ -1551,7 +1593,7 @@ node scripts/build.mjs</code></pre></div>
     if (how === 'pin') { togglePin(it.key); render(); return; }
     if (how === 'go') { remember(it.key); closePal(false); goTo(it.agent, it.sub, it.rowId); return; }
     if (how === 'chain') {
-      if (!it.el.dataset.step) { say('Only skills and their commands can join a chain.', true); return; }
+      if (!it.el.dataset.step) { say("Built-in commands can't join a chain. Pick a skill or one of its commands.", true); return; }
       remember(it.key);
       addSteps(it.agent, stepsOf(it.el));
       palInput.value = '';
@@ -1618,6 +1660,7 @@ node scripts/build.mjs</code></pre></div>
   });
   document.getElementById('cc-kbd').textContent = mac ? 'cmd k' : 'ctrl k';
   qs('[data-alt]').forEach(function (k) { k.textContent = mac ? 'opt' : 'alt'; });
+  qs('[data-mod]').forEach(function (k) { k.textContent = mac ? 'cmd' : 'ctrl'; });
   renderPins();
 
   readOpen().forEach(function (id) {

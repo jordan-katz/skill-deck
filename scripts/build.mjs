@@ -423,7 +423,7 @@ const script = (await read(join(root, "scripts", "deck.js"))).replaceAll("\r\n",
 const effectChips = Object.entries(EFFECTS).map(([lvl, desc]) =>
   `<button class="effect-chip eff-${esc(lvl)}" type="button" data-level="${esc(lvl)}" aria-pressed="false" title="${esc(desc)}"><span class="eff eff-${esc(lvl)}">${esc(lvl)}</span><span class="n"></span></button>`).join("");
 const effectLegend = Object.entries(EFFECTS).map(([lvl, desc]) =>
-  `\n    <span><span class="eff eff-${esc(lvl)}">${esc(lvl)}</span> ${esc(desc)}</span>`).join("");
+  `\n        <div class="lg-row"><dt><span class="eff eff-${esc(lvl)}">${esc(lvl)}</span></dt><dd>${esc(desc)}</dd></div>`).join("");
 
 const fills = {
   __DECK_EFFECTS__: effectChips,
