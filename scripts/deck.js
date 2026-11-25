@@ -581,8 +581,12 @@
       bare: text.replace(/^[^a-z0-9]+/i, '')
     };
   });
+  // A uses-tree leaf copies the same line as that skill's own chip. The skill's
+  // own chip wins, so the entry always goes to the skill's own row.
   var byKey = {};
-  index = index.filter(function (it) { if (byKey[it.key]) return false; byKey[it.key] = it; return true; });
+  var inTree = function (it) { return !!it.el.closest('.tree'); };
+  index.forEach(function (it) { var had = byKey[it.key]; if (!had || (inTree(had) && !inTree(it))) byKey[it.key] = it; });
+  index = index.filter(function (it) { return byKey[it.key] === it; });
   // Pages: every tab and section, offered when the query asks for one.
   var pages = [];
   agentPanels.forEach(function (p) {
