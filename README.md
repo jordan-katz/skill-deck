@@ -128,8 +128,10 @@ commands.
 
 A chain is several skills or commands for one agent, rendered as one prompt.
 `Alt+click` a command to add it, or flip the click toggle to `chain` (the only
-way on a phone). Alt+clicking a macro adds all of its steps. Each addition puts
-the whole chain on the clipboard, so you can paste it straight into a session.
+way on a phone). Alt+clicking a macro adds all of its steps. Every step you add
+puts the whole chain so far on the clipboard, so Ctrl+V pastes it into any
+session without going back to the tray. Clear can be undone until the next step
+goes in.
 
 With a command prefix the chain reads as commands the agent knows:
 

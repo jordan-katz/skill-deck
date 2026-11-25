@@ -423,7 +423,7 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
     </div>
     <div class="effect-bar swipe" id="effects" role="group" aria-label="Filter by effect">__DECK_EFFECTS__</div>
     <div class="controls-end">
-      <div class="seg" id="click-mode" role="group" aria-label="What a click on a command does"><button type="button" data-mode="copy" aria-pressed="true">copy</button><button type="button" data-mode="chain" aria-pressed="false">chain</button></div>
+      <div class="seg" id="click-mode" role="group" aria-label="What a click on a command does"><button type="button" data-mode="copy" aria-pressed="true">copy</button><button type="button" data-mode="chain" aria-pressed="false" title="Each click adds a step and copies the whole chain">chain</button></div>
       <button class="linkish" data-expand type="button">expand all</button>
       <span class="sep" aria-hidden="true">/</span>
       <button class="linkish" data-collapse type="button">collapse</button>
@@ -436,7 +436,7 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
     <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
     <span><code class="arg">[arg]</code> What to put after the command.</span>
     <span><code class="chip cmd-chip" style="cursor:default">cmd</code> A command the skill takes. <code class="chip cmd-chip macro" style="cursor:default">macro</code> A command that runs several in order.</span>
-    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to a chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
+    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to the chain and copies the whole chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
   </div>
   <p class="foot" data-built="__DECK_BUILT__">__DECK_FOOT__<span class="age" id="age"></span></p>
 </div>

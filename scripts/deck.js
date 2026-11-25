@@ -260,12 +260,15 @@
     if (prev && prev.focus) prev.focus({ preventScroll: true });
     return ok;
   }
+  // Reaches the clipboard by any route, then calls ok or fail. Never throws.
+  function toClipboard(text, ok, fail) {
+    var miss = function () { if (fallback(text)) ok(); else fail(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, miss);
+    else miss();
+  }
   function copy(el, text, label) {
     if (!text) return;
-    var done = function () { flash(el, label || text); };
-    var miss = function () { if (fallback(text)) done(); else say('The clipboard was not reachable here. Select and copy it by hand.', true); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, miss);
-    else miss();
+    toClipboard(text, function () { flash(el, label || text); }, function () { say('The clipboard was not reachable here. Select and copy it by hand.', true); });
   }
 
   // ---- chain -------------------------------------------------------------
@@ -286,6 +289,8 @@
   })();
   var chainMode = store.get('deck.click') === 'chain';
   var trayOpen = store.get('deck.tray') === '1';
+  var clearBtn = document.getElementById('chain-clear');
+  var undo = null;
 
   // One line of plain text, so nothing pasted can break out of a terminal prompt.
   function oneLine(v, max) { return String(v || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max || 500); }
@@ -386,35 +391,42 @@
       up.setAttribute('aria-label', 'Move ' + stepText(st) + ' up');
       up.addEventListener('click', function () {
         var t = chain.steps[i - 1]; chain.steps[i - 1] = chain.steps[i]; chain.steps[i] = t;
-        chainChanged(false);
+        chainChanged();
       });
       var x = li.querySelector('.cs-x');
       x.setAttribute('aria-label', 'Remove ' + stepText(st));
       x.addEventListener('click', function () {
         chain.steps.splice(i, 1);
         if (!chain.steps.length) chain.agent = null;
-        chainChanged(false);
+        chainChanged();
       });
       chainSteps.appendChild(li);
     });
     if (!n) {
       var hint = document.createElement('li');
       hint.className = 'cs-empty';
-      hint.textContent = (mac ? 'Option' : 'Alt') + '+click a command to add it, or switch clicks to chain.';
+      hint.textContent = 'Click skills in the order you want them run, with ' + (mac ? 'Option' : 'Alt') + '+click or clicks set to chain. Each click copies the whole chain, so ' + (mac ? 'Cmd' : 'Ctrl') + '+V pastes it into any session.';
       chainSteps.appendChild(hint);
     }
+    clearBtn.textContent = !n && undo ? 'bring back ' + undo.steps.length : 'clear';
+    clearBtn.title = !n && undo ? 'Bring back the chain you cleared' : 'Clear the chain';
     chainTarget.value = chain.target;
     chainNotes.value = chain.notes;
     chainPreview.textContent = chainText() || 'The prompt shows up here.';
     chainPreview.classList.toggle('empty', !n);
     markChips();
   }
-  // Every change puts the whole chain on the clipboard, so Ctrl+V pastes it
-  // into a session without a trip back to the copy button.
-  function chainChanged(announce) {
+  function chainChanged() {
     saveChain();
     renderChainUi();
-    if (announce && chain.steps.length) copy(null, chainText(), announce);
+  }
+  // Each step added puts the whole chain so far on the clipboard, so Ctrl+V
+  // pastes it into any session without a trip back to the copy button.
+  function copyChain() {
+    var n = chain.steps.length;
+    toClipboard(chainText(),
+      function () { say('Chain of ' + n + ' on your clipboard. ' + (mac ? 'Cmd' : 'Ctrl') + '+V pastes it into any session.'); },
+      function () { say('Added to the chain. The clipboard was not reachable; use Copy chain in the tray.', true); });
   }
   function addSteps(agent, steps) {
     if (chain.steps.length && chain.agent !== agent) {
@@ -423,9 +435,10 @@
     }
     if (chain.steps.length + steps.length > CHAIN_MAX) { say('A chain holds ' + CHAIN_MAX + ' steps at most.', true); return; }
     chain.agent = agent;
+    undo = null;
     steps.forEach(function (s) { chain.steps.push(s.cmd ? { skill: s.skill, cmd: s.cmd } : { skill: s.skill }); });
-    var n = chain.steps.length;
-    chainChanged('chain of ' + n + (n === 1 ? ' step' : ' steps'));
+    chainChanged();
+    copyChain();
   }
   // The step a chip stands for: one step, or a macro's whole sequence.
   function stepsOf(el) {
@@ -438,9 +451,19 @@
     if (!chain.steps.length) { say('Add a step first.', true); return; }
     copy(e.currentTarget, chainText(), 'chain');
   });
-  document.getElementById('chain-clear').addEventListener('click', function () {
+  // Clear keeps what it threw away until the next step is added, so one
+  // misclick does not cost a chain you built up a click at a time.
+  clearBtn.addEventListener('click', function () {
+    if (!chain.steps.length && undo) {
+      chain.agent = undo.agent; chain.steps = undo.steps; chain.notes = undo.notes;
+      undo = null;
+      chainChanged();
+      return;
+    }
+    if (!chain.steps.length) return;
+    undo = { agent: chain.agent, steps: chain.steps.slice(), notes: chain.notes };
     chain = { agent: null, steps: [], target: chain.target, notes: '' };
-    chainChanged(false);
+    chainChanged();
   });
   document.getElementById('chain-close').addEventListener('click', function () {
     setTray(false);

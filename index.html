@@ -423,7 +423,7 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; }
     </div>
     <div class="effect-bar swipe" id="effects" role="group" aria-label="Filter by effect"><button class="effect-chip eff-inspect" type="button" data-level="inspect" aria-pressed="false" title="Reads and reports. Nothing changes."><span class="eff eff-inspect">inspect</span><span class="n"></span></button><button class="effect-chip eff-draft" type="button" data-level="draft" aria-pressed="false" title="Produces text, a plan, or a doc. No code changes."><span class="eff eff-draft">draft</span><span class="n"></span></button><button class="effect-chip eff-build" type="button" data-level="build" aria-pressed="false" title="Edits code and files in the repo."><span class="eff eff-build">build</span><span class="n"></span></button><button class="effect-chip eff-external" type="button" data-level="external" aria-pressed="false" title="Changes something outside the repo."><span class="eff eff-external">external</span><span class="n"></span></button></div>
     <div class="controls-end">
-      <div class="seg" id="click-mode" role="group" aria-label="What a click on a command does"><button type="button" data-mode="copy" aria-pressed="true">copy</button><button type="button" data-mode="chain" aria-pressed="false">chain</button></div>
+      <div class="seg" id="click-mode" role="group" aria-label="What a click on a command does"><button type="button" data-mode="copy" aria-pressed="true">copy</button><button type="button" data-mode="chain" aria-pressed="false" title="Each click adds a step and copies the whole chain">chain</button></div>
       <button class="linkish" data-expand type="button">expand all</button>
       <span class="sep" aria-hidden="true">/</span>
       <button class="linkish" data-collapse type="button">collapse</button>
@@ -748,7 +748,7 @@ node scripts/build.mjs</code></pre></div>
     <span><span class="badge badge-invoke">slash only</span>Runs only when you type the command.</span>
     <span><code class="arg">[arg]</code> What to put after the command.</span>
     <span><code class="chip cmd-chip" style="cursor:default">cmd</code> A command the skill takes. <code class="chip cmd-chip macro" style="cursor:default">macro</code> A command that runs several in order.</span>
-    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to a chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
+    <span>Click a command to copy it. <kbd class="kbd"><span data-alt>alt</span></kbd>+click adds it to the chain and copies the whole chain. The <b>uses</b> number opens the tree of what it delegates to.</span>
   </div>
   <p class="foot" data-built="2026-11-25">Built 2026-11-25 from data/. claude-code 10 · example 3. Refresh from the config repos with <code class="chip chip-copy" role="button" tabindex="0" data-copy="node scripts/sync.mjs &amp;&amp; node scripts/build.mjs" title="Copy the rebuild command">node scripts/sync.mjs &amp;&amp; node scripts/build.mjs<span class="copy-hint" aria-hidden="true"></span></code><span class="age" id="age"></span></p>
 </div>
@@ -1035,12 +1035,15 @@ node scripts/build.mjs</code></pre></div>
     if (prev && prev.focus) prev.focus({ preventScroll: true });
     return ok;
   }
+  // Reaches the clipboard by any route, then calls ok or fail. Never throws.
+  function toClipboard(text, ok, fail) {
+    var miss = function () { if (fallback(text)) ok(); else fail(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, miss);
+    else miss();
+  }
   function copy(el, text, label) {
     if (!text) return;
-    var done = function () { flash(el, label || text); };
-    var miss = function () { if (fallback(text)) done(); else say('The clipboard was not reachable here. Select and copy it by hand.', true); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, miss);
-    else miss();
+    toClipboard(text, function () { flash(el, label || text); }, function () { say('The clipboard was not reachable here. Select and copy it by hand.', true); });
   }
 
   // ---- chain -------------------------------------------------------------
@@ -1061,6 +1064,8 @@ node scripts/build.mjs</code></pre></div>
   })();
   var chainMode = store.get('deck.click') === 'chain';
   var trayOpen = store.get('deck.tray') === '1';
+  var clearBtn = document.getElementById('chain-clear');
+  var undo = null;
 
   // One line of plain text, so nothing pasted can break out of a terminal prompt.
   function oneLine(v, max) { return String(v || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max || 500); }
@@ -1161,35 +1166,42 @@ node scripts/build.mjs</code></pre></div>
       up.setAttribute('aria-label', 'Move ' + stepText(st) + ' up');
       up.addEventListener('click', function () {
         var t = chain.steps[i - 1]; chain.steps[i - 1] = chain.steps[i]; chain.steps[i] = t;
-        chainChanged(false);
+        chainChanged();
       });
       var x = li.querySelector('.cs-x');
       x.setAttribute('aria-label', 'Remove ' + stepText(st));
       x.addEventListener('click', function () {
         chain.steps.splice(i, 1);
         if (!chain.steps.length) chain.agent = null;
-        chainChanged(false);
+        chainChanged();
       });
       chainSteps.appendChild(li);
     });
     if (!n) {
       var hint = document.createElement('li');
       hint.className = 'cs-empty';
-      hint.textContent = (mac ? 'Option' : 'Alt') + '+click a command to add it, or switch clicks to chain.';
+      hint.textContent = 'Click skills in the order you want them run, with ' + (mac ? 'Option' : 'Alt') + '+click or clicks set to chain. Each click copies the whole chain, so ' + (mac ? 'Cmd' : 'Ctrl') + '+V pastes it into any session.';
       chainSteps.appendChild(hint);
     }
+    clearBtn.textContent = !n && undo ? 'bring back ' + undo.steps.length : 'clear';
+    clearBtn.title = !n && undo ? 'Bring back the chain you cleared' : 'Clear the chain';
     chainTarget.value = chain.target;
     chainNotes.value = chain.notes;
     chainPreview.textContent = chainText() || 'The prompt shows up here.';
     chainPreview.classList.toggle('empty', !n);
     markChips();
   }
-  // Every change puts the whole chain on the clipboard, so Ctrl+V pastes it
-  // into a session without a trip back to the copy button.
-  function chainChanged(announce) {
+  function chainChanged() {
     saveChain();
     renderChainUi();
-    if (announce && chain.steps.length) copy(null, chainText(), announce);
+  }
+  // Each step added puts the whole chain so far on the clipboard, so Ctrl+V
+  // pastes it into any session without a trip back to the copy button.
+  function copyChain() {
+    var n = chain.steps.length;
+    toClipboard(chainText(),
+      function () { say('Chain of ' + n + ' on your clipboard. ' + (mac ? 'Cmd' : 'Ctrl') + '+V pastes it into any session.'); },
+      function () { say('Added to the chain. The clipboard was not reachable; use Copy chain in the tray.', true); });
   }
   function addSteps(agent, steps) {
     if (chain.steps.length && chain.agent !== agent) {
@@ -1198,9 +1210,10 @@ node scripts/build.mjs</code></pre></div>
     }
     if (chain.steps.length + steps.length > CHAIN_MAX) { say('A chain holds ' + CHAIN_MAX + ' steps at most.', true); return; }
     chain.agent = agent;
+    undo = null;
     steps.forEach(function (s) { chain.steps.push(s.cmd ? { skill: s.skill, cmd: s.cmd } : { skill: s.skill }); });
-    var n = chain.steps.length;
-    chainChanged('chain of ' + n + (n === 1 ? ' step' : ' steps'));
+    chainChanged();
+    copyChain();
   }
   // The step a chip stands for: one step, or a macro's whole sequence.
   function stepsOf(el) {
@@ -1213,9 +1226,19 @@ node scripts/build.mjs</code></pre></div>
     if (!chain.steps.length) { say('Add a step first.', true); return; }
     copy(e.currentTarget, chainText(), 'chain');
   });
-  document.getElementById('chain-clear').addEventListener('click', function () {
+  // Clear keeps what it threw away until the next step is added, so one
+  // misclick does not cost a chain you built up a click at a time.
+  clearBtn.addEventListener('click', function () {
+    if (!chain.steps.length && undo) {
+      chain.agent = undo.agent; chain.steps = undo.steps; chain.notes = undo.notes;
+      undo = null;
+      chainChanged();
+      return;
+    }
+    if (!chain.steps.length) return;
+    undo = { agent: chain.agent, steps: chain.steps.slice(), notes: chain.notes };
     chain = { agent: null, steps: [], target: chain.target, notes: '' };
-    chainChanged(false);
+    chainChanged();
   });
   document.getElementById('chain-close').addEventListener('click', function () {
     setTray(false);
